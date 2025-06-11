@@ -104,7 +104,7 @@ export class Enemy {
     this.updateAIState(distanceToPlayer, playerPosition);
     
     // Execute AI behavior
-    this.executeAIBehavior(deltaTime, playerPosition, distanceToPlayer);
+    this.executeAIBehavior(deltaTime, playerPosition, distanceToPlayer, platforms);
     
     // Apply gravity (except for flyers)
     if (this.type !== 'flyer') {

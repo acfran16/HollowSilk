@@ -126,7 +126,7 @@ export class GameEngine {
 
     // Update enemies
     this.enemies.forEach(enemy => {
-      enemy.update(deltaTime, this.player.getPosition());
+      enemy.update(deltaTime, this.player.getPosition(), this.level.getPlatforms());
     });
 
     // Update physics
