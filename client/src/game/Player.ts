@@ -99,7 +99,7 @@ export class Player {
     }
     
     // Jump (only vertical movement)
-    if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp')) && this._isGrounded) {
+    if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp') || input.isKeyPressed(' ')) && this._isGrounded) {
       this.velocity.y = -this.jumpForce;
       this._isGrounded = false;
       this.currentAnimation = 'jump';

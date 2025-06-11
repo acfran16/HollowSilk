@@ -2,6 +2,7 @@ export class InputManager {
   private pressedKeys: Set<string> = new Set();
   private justPressedKeys: Set<string> = new Set();
   private justReleasedKeys: Set<string> = new Set();
+  private virtualInputs: Set<string> = new Set();
 
   initialize() {
     window.addEventListener('keydown', this.handleKeyDown.bind(this));
@@ -32,6 +33,21 @@ export class InputManager {
     // Clear just pressed/released keys after each frame
     this.justPressedKeys.clear();
     this.justReleasedKeys.clear();
+  }
+
+  // Virtual input methods for mobile controls
+  setVirtualInput(keyCode: string, pressed: boolean) {
+    if (pressed) {
+      if (!this.pressedKeys.has(keyCode) && !this.virtualInputs.has(keyCode)) {
+        this.justPressedKeys.add(keyCode);
+      }
+      this.pressedKeys.add(keyCode);
+      this.virtualInputs.add(keyCode);
+    } else {
+      this.pressedKeys.delete(keyCode);
+      this.virtualInputs.delete(keyCode);
+      this.justReleasedKeys.add(keyCode);
+    }
   }
 
   isKeyPressed(keyCode: string): boolean {

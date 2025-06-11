@@ -103,6 +103,12 @@ export class GameEngine {
     this.stateUpdateCallbacks.push(callback);
   }
 
+  handleVirtualInput(action: string, pressed: boolean) {
+    if (this.inputManager) {
+      this.inputManager.setVirtualInput(action, pressed);
+    }
+  }
+
   private update(currentTime: number) {
     if (!this.isRunning) return;
 
