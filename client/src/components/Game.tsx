@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import GameCanvas from "./GameCanvas";
 import GameUI from "./GameUI";
 import MobileControls from "./MobileControls";
+import MobileInstructions from "./MobileInstructions";
 import { GameEngine } from "../game/GameEngine";
 import { useGameState } from "../lib/stores/useGameState";
 
@@ -34,6 +35,7 @@ export default function Game() {
       <GameCanvas gameEngine={gameEngineRef.current} />
       <GameUI />
       <MobileControls onInput={handleMobileInput} />
+      <MobileInstructions />
     </div>
   );
 }

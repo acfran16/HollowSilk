@@ -115,12 +115,12 @@ export class Player {
     }
     
     // Attack
-    if (input.isKeyJustPressed('KeyJ') && this.attackCooldown <= 0) {
+    if ((input.isKeyJustPressed('KeyJ') || input.isKeyJustPressed('KeyX')) && this.attackCooldown <= 0) {
       this.performAttack();
     }
     
     // Special attack
-    if (input.isKeyJustPressed('KeyK') && this.attackCooldown <= 0 && this.comboCount >= 3) {
+    if ((input.isKeyJustPressed('KeyK') || input.isKeyJustPressed('KeyZ')) && this.attackCooldown <= 0 && this.comboCount >= 3) {
       this.performSpecialAttack();
     }
   }

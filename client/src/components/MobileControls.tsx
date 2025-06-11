@@ -41,7 +41,7 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
   };
 
   const buttonClass = (action: string) =>
-    `select-none touch-none rounded-lg border-2 font-bold text-white transition-all duration-100 ${
+    `select-none touch-none rounded-lg border-2 font-bold text-white transition-all duration-100 flex items-center justify-center ${
       activeButtons.has(action)
         ? 'bg-blue-600 border-blue-400 scale-95 shadow-inner'
         : 'bg-blue-500 border-blue-300 shadow-lg active:scale-95'
@@ -50,12 +50,12 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       {/* Movement Controls - Left Side */}
-      <div className="absolute bottom-4 left-4 pointer-events-auto">
+      <div className="absolute bottom-6 left-6 pointer-events-auto">
         {/* D-Pad */}
-        <div className="relative w-32 h-32">
+        <div className="relative w-36 h-36">
           {/* Left Arrow */}
           <button
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 ${buttonClass('ArrowLeft')}`}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 text-lg ${buttonClass('ArrowLeft')}`}
             onTouchStart={handleTouchStart('ArrowLeft')}
             onTouchEnd={handleTouchEnd('ArrowLeft')}
             onTouchCancel={handleTouchEnd('ArrowLeft')}
@@ -65,7 +65,7 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
           
           {/* Right Arrow */}
           <button
-            className={`absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 ${buttonClass('ArrowRight')}`}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 text-lg ${buttonClass('ArrowRight')}`}
             onTouchStart={handleTouchStart('ArrowRight')}
             onTouchEnd={handleTouchEnd('ArrowRight')}
             onTouchCancel={handleTouchEnd('ArrowRight')}
@@ -75,7 +75,7 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
           
           {/* Up Arrow (Jump) */}
           <button
-            className={`absolute top-0 left-1/2 -translate-x-1/2 w-10 h-10 ${buttonClass(' ')}`}
+            className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 text-lg ${buttonClass(' ')}`}
             onTouchStart={handleTouchStart(' ')}
             onTouchEnd={handleTouchEnd(' ')}
             onTouchCancel={handleTouchEnd(' ')}
@@ -86,12 +86,12 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
       </div>
 
       {/* Action Controls - Right Side */}
-      <div className="absolute bottom-4 right-4 pointer-events-auto">
-        <div className="flex flex-col gap-3">
+      <div className="absolute bottom-6 right-6 pointer-events-auto">
+        <div className="flex flex-col gap-4">
           {/* Top Row - Dash */}
           <div className="flex justify-center">
             <button
-              className={`w-16 h-12 ${buttonClass('ShiftLeft')} text-sm`}
+              className={`w-18 h-14 ${buttonClass('ShiftLeft')} text-sm font-bold`}
               onTouchStart={handleTouchStart('ShiftLeft')}
               onTouchEnd={handleTouchEnd('ShiftLeft')}
               onTouchCancel={handleTouchEnd('ShiftLeft')}
@@ -101,9 +101,9 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
           </div>
           
           {/* Bottom Row - Attack Buttons */}
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <button
-              className={`w-16 h-16 rounded-full ${buttonClass('KeyX')} text-sm`}
+              className={`w-18 h-18 rounded-full ${buttonClass('KeyX')} text-sm font-bold`}
               onTouchStart={handleTouchStart('KeyX')}
               onTouchEnd={handleTouchEnd('KeyX')}
               onTouchCancel={handleTouchEnd('KeyX')}
@@ -112,7 +112,7 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
             </button>
             
             <button
-              className={`w-16 h-16 rounded-full ${buttonClass('KeyZ')} text-sm`}
+              className={`w-18 h-18 rounded-full ${buttonClass('KeyZ')} text-sm font-bold`}
               onTouchStart={handleTouchStart('KeyZ')}
               onTouchEnd={handleTouchEnd('KeyZ')}
               onTouchCancel={handleTouchEnd('KeyZ')}

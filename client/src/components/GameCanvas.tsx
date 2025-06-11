@@ -36,8 +36,11 @@ export default function GameCanvas({ gameEngine }: GameCanvasProps) {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute top-0 left-0 w-full h-full bg-black"
-      style={{ imageRendering: "pixelated" }}
+      className="absolute top-0 left-0 w-full h-full bg-black touch-none"
+      style={{ 
+        imageRendering: "pixelated",
+        touchAction: "none"
+      }}
     />
   );
 }
