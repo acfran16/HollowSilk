@@ -89,7 +89,7 @@ export class Enemy {
     }
   }
 
-  update(deltaTime: number, playerPosition: Vector2) {
+  update(deltaTime: number, playerPosition: Vector2, platforms?: any[]) {
     // Update AI timers
     this.ai.lastAttackTime += deltaTime;
     this.alertTimer = Math.max(0, this.alertTimer - deltaTime);
@@ -141,13 +141,13 @@ export class Enemy {
     }
   }
 
-  private executeAIBehavior(deltaTime: number, playerPosition: Vector2, distanceToPlayer: number) {
+  private executeAIBehavior(deltaTime: number, playerPosition: Vector2, distanceToPlayer: number, platforms?: any[]) {
     switch (this.state) {
       case 'patrol':
-        this.patrol();
+        this.patrol(platforms);
         break;
       case 'chasing':
-        this.chasePlayer(playerPosition);
+        this.chasePlayer(playerPosition, platforms);
         break;
       case 'searching':
         this.searchForPlayer();
@@ -158,13 +158,13 @@ export class Enemy {
     }
   }
 
-  private patrol() {
+  private patrol(platforms?: any[]) {
     // Enhanced patrol behavior with obstacle avoidance
     const distanceFromStart = this.position.x - this.patrolStartX;
     
     // Check for obstacles ahead
     const checkDistance = 50;
-    const hasObstacleAhead = this.checkForObstacle(this.velocity.x > 0 ? 1 : -1, checkDistance);
+    const hasObstacleAhead = this.checkForObstacle(this.velocity.x > 0 ? 1 : -1, checkDistance, platforms);
     
     if (hasObstacleAhead) {
       // Reverse direction when hitting obstacle
@@ -178,7 +178,7 @@ export class Enemy {
     }
   }
 
-  private chasePlayer(playerPosition: Vector2) {
+  private chasePlayer(playerPosition: Vector2, platforms?: any[]) {
     const dx = playerPosition.x - this.position.x;
     const dy = playerPosition.y - this.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -186,7 +186,7 @@ export class Enemy {
     if (distance > 0) {
       // Check for obstacles when chasing
       const direction = dx > 0 ? 1 : -1;
-      const hasObstacle = this.checkForObstacle(direction, 40);
+      const hasObstacle = this.checkForObstacle(direction, 40, platforms);
       
       if (hasObstacle && this.type !== 'flyer') {
         // Try to jump over obstacle or find alternate path
@@ -364,15 +364,26 @@ export class Enemy {
     };
   }
 
-  private checkForObstacle(direction: number, distance: number): boolean {
+  private checkForObstacle(direction: number, distance: number, platforms?: any[]): boolean {
+    if (!platforms) return false;
+    
     // Check for obstacles in the given direction
     const checkX = this.position.x + (direction * distance);
     const checkY = this.position.y;
-    const checkWidth = 10;
+    const checkWidth = 15;
     const checkHeight = this.size.y;
     
-    // Simple obstacle detection - check for significant elevation changes
-    // This will be enhanced when level reference is available
+    // Check for collision with obstacle-type platforms
+    for (const platform of platforms) {
+      if (platform.type === 'obstacle' &&
+          checkX < platform.x + platform.width &&
+          checkX + checkWidth > platform.x &&
+          checkY < platform.y + platform.height &&
+          checkY + checkHeight > platform.y) {
+        return true;
+      }
+    }
+    
     return false;
   }
 
