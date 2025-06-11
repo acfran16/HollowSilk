@@ -52,13 +52,10 @@ export class Physics {
       playerVel.x = 0;
     }
     
+    // No fall to death - just keep player in bounds
     if (playerPos.y > worldBounds.bottom) {
-      // Player fell off the world - respawn instead of damage
-      playerPos.x = 400; // Respawn at start
-      playerPos.y = 300;
-      playerVel.x = 0;
+      playerPos.y = worldBounds.bottom;
       playerVel.y = 0;
-      player.takeDamage(10, { x: 0, y: 0 }); // Small damage penalty
     }
   }
 
