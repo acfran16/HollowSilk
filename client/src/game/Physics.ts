@@ -19,6 +19,8 @@ export class Physics {
   private updatePlayerPhysics(player: Player, level: Level) {
     const playerBounds = player.getBounds();
     const platforms = level.getPlatforms();
+    const playerPos = player.getPosition();
+    const playerVel = player.getVelocity();
     
     // Check ground collision
     let isGrounded = false;
@@ -28,10 +30,10 @@ export class Physics {
         // Player is touching a platform
         const overlapY = (playerBounds.y + playerBounds.height) - platform.y;
         
-        if (overlapY > 0 && overlapY < 20 && player.getVelocity().y >= 0) {
+        if (overlapY > 0 && overlapY < 20 && playerVel.y >= 0) {
           // Player is landing on top of platform
-          player.getPosition().y = platform.y - playerBounds.height / 2;
-          player.getVelocity().y = 0;
+          playerPos.y = platform.y - playerBounds.height / 2;
+          playerVel.y = 0;
           isGrounded = true;
         }
       }
@@ -41,20 +43,22 @@ export class Physics {
     
     // World boundaries
     const worldBounds = level.getWorldBounds();
-    const pos = player.getPosition();
     
-    if (pos.x < worldBounds.left) {
-      pos.x = worldBounds.left;
-      player.getVelocity().x = 0;
-    } else if (pos.x > worldBounds.right) {
-      pos.x = worldBounds.right;
-      player.getVelocity().x = 0;
+    if (playerPos.x < worldBounds.left) {
+      playerPos.x = worldBounds.left;
+      playerVel.x = 0;
+    } else if (playerPos.x > worldBounds.right) {
+      playerPos.x = worldBounds.right;
+      playerVel.x = 0;
     }
     
-    if (pos.y > worldBounds.bottom) {
-      // Player fell off the world
-      player.takeDamage(25, { x: 0, y: -200 });
-      pos.y = worldBounds.bottom - 100;
+    if (playerPos.y > worldBounds.bottom) {
+      // Player fell off the world - respawn instead of damage
+      playerPos.x = 400; // Respawn at start
+      playerPos.y = 300;
+      playerVel.x = 0;
+      playerVel.y = 0;
+      player.takeDamage(10, { x: 0, y: 0 }); // Small damage penalty
     }
   }
 

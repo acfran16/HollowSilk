@@ -245,8 +245,8 @@ export class Player {
   }
 
   // Getters
-  getPosition(): Vector2 { return { ...this.position }; }
-  getVelocity(): Vector2 { return { ...this.velocity }; }
+  getPosition(): Vector2 { return this.position; }
+  getVelocity(): Vector2 { return this.velocity; }
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
   getComboCount(): number { return this.comboCount; }
