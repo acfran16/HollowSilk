@@ -27,9 +27,9 @@ export class Player {
   private maxComboTimer: number = 2.0;
   
   // State flags
-  private isGrounded: boolean = false;
-  private isDashing: boolean = false;
-  private isAttacking: boolean = false;
+  private _isGrounded: boolean = false;
+  private _isDashing: boolean = false;
+  private _isAttacking: boolean = false;
   private facingDirection: number = 1; // 1 for right, -1 for left
   
   // Animation
@@ -57,13 +57,13 @@ export class Player {
     }
     
     // Update dash state
-    this.isDashing = this.dashDuration > 0;
+    this._isDashing = this.dashDuration > 0;
     
     // Handle input
     this.handleInput(input);
     
     // Apply gravity
-    if (!this.isGrounded) {
+    if (!this._isGrounded) {
       this.velocity.y += 800 * deltaTime; // Gravity
     }
     
@@ -75,31 +75,31 @@ export class Player {
     this.updateAnimation(deltaTime);
     
     // Apply friction
-    if (this.isGrounded && !this.isDashing) {
+    if (this._isGrounded && !this._isDashing) {
       this.velocity.x *= 0.8;
     }
   }
 
   private handleInput(input: InputManager) {
-    const moveSpeed = this.isDashing ? this.dashForce : this.speed;
+    const moveSpeed = this._isDashing ? this.dashForce : this.speed;
     
     // Horizontal movement
     if (input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft')) {
       this.velocity.x = -moveSpeed;
       this.facingDirection = -1;
-      this.currentAnimation = this.isGrounded ? 'run' : 'jump';
+      this.currentAnimation = this._isGrounded ? 'run' : 'jump';
     } else if (input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) {
       this.velocity.x = moveSpeed;
       this.facingDirection = 1;
-      this.currentAnimation = this.isGrounded ? 'run' : 'jump';
-    } else if (this.isGrounded && !this.isDashing) {
+      this.currentAnimation = this._isGrounded ? 'run' : 'jump';
+    } else if (this._isGrounded && !this._isDashing) {
       this.currentAnimation = 'idle';
     }
     
     // Jump
-    if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp')) && this.isGrounded) {
+    if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp')) && this._isGrounded) {
       this.velocity.y = -this.jumpForce;
-      this.isGrounded = false;
+      this._isGrounded = false;
       this.currentAnimation = 'jump';
     }
     
@@ -122,7 +122,7 @@ export class Player {
   }
 
   private performAttack() {
-    this.isAttacking = true;
+    this._isAttacking = true;
     this.attackCooldown = this.maxAttackCooldown;
     this.currentAnimation = 'attack';
     
@@ -132,12 +132,12 @@ export class Player {
     
     // Reset attack animation after a short delay
     setTimeout(() => {
-      this.isAttacking = false;
+      this._isAttacking = false;
     }, 200);
   }
 
   private performSpecialAttack() {
-    this.isAttacking = true;
+    this._isAttacking = true;
     this.attackCooldown = this.maxAttackCooldown * 1.5;
     this.currentAnimation = 'special_attack';
     
@@ -145,7 +145,7 @@ export class Player {
     this.comboCount = 0;
     
     setTimeout(() => {
-      this.isAttacking = false;
+      this._isAttacking = false;
     }, 400);
   }
 
@@ -163,7 +163,7 @@ export class Player {
     }
     
     // Draw player rectangle (placeholder for sprite)
-    ctx.fillStyle = this.isDashing ? '#4488ff' : (this.isAttacking ? '#ff4444' : '#44ff44');
+    ctx.fillStyle = this._isDashing ? '#4488ff' : (this._isAttacking ? '#ff4444' : '#44ff44');
     ctx.fillRect(
       this.position.x - this.size.x / 2,
       this.position.y - this.size.y / 2,
@@ -195,7 +195,7 @@ export class Player {
     ctx.restore();
     
     // Draw attack hitbox when attacking
-    if (this.isAttacking) {
+    if (this._isAttacking) {
       const hitbox = this.getAttackHitBox();
       ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
       ctx.lineWidth = 2;
@@ -228,7 +228,7 @@ export class Player {
   }
 
   setGrounded(grounded: boolean) {
-    this.isGrounded = grounded;
+    this._isGrounded = grounded;
   }
 
   getBounds() {
@@ -246,8 +246,8 @@ export class Player {
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
   getComboCount(): number { return this.comboCount; }
-  isGrounded(): boolean { return this.isGrounded; }
-  isDashing(): boolean { return this.isDashing; }
-  isAttacking(): boolean { return this.isAttacking; }
+  isGrounded(): boolean { return this._isGrounded; }
+  isDashing(): boolean { return this._isDashing; }
+  isAttacking(): boolean { return this._isAttacking; }
   getFacingDirection(): number { return this.facingDirection; }
 }
