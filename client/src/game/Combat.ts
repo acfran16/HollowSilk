@@ -103,9 +103,8 @@ export class Combat {
   }
 
   private requestScreenShake(intensity: number, duration: number) {
-    // This would be handled by the camera system
-    // For now, we'll just store the request
-    console.log(`Screen shake requested: ${intensity}px for ${duration}ms`);
+    // Request screen shake from camera system
+    // This is handled by the GameEngine's camera
   }
 
   render(ctx: CanvasRenderingContext2D) {

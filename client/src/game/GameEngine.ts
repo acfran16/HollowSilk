@@ -60,12 +60,17 @@ export class GameEngine {
   }
 
   private initializeEnemies() {
-    // Create various enemy types
+    // Create enemies spread across the side-scrolling level
     this.enemies = [
-      new Enemy({ x: 600, y: 300 }, 'crawler'),
-      new Enemy({ x: 800, y: 200 }, 'flyer'),
-      new Enemy({ x: 1000, y: 350 }, 'guardian'),
-      new Enemy({ x: 1200, y: 300 }, 'crawler'),
+      new Enemy({ x: 700, y: 300 }, 'crawler'),
+      new Enemy({ x: 900, y: 200 }, 'flyer'),
+      new Enemy({ x: 1200, y: 350 }, 'guardian'),
+      new Enemy({ x: 1400, y: 300 }, 'crawler'),
+      new Enemy({ x: 1600, y: 200 }, 'flyer'),
+      new Enemy({ x: 1900, y: 350 }, 'crawler'),
+      new Enemy({ x: 2100, y: 250 }, 'guardian'),
+      new Enemy({ x: 2300, y: 300 }, 'flyer'),
+      new Enemy({ x: 2500, y: 350 }, 'crawler'),
     ];
   }
 

@@ -83,7 +83,7 @@ export class Player {
   private handleInput(input: InputManager) {
     const moveSpeed = this._isDashing ? this.dashForce : this.speed;
     
-    // Horizontal movement
+    // Horizontal movement (side-scrolling focus)
     if (input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft')) {
       this.velocity.x = -moveSpeed;
       this.facingDirection = -1;
@@ -94,20 +94,24 @@ export class Player {
       this.currentAnimation = this._isGrounded ? 'run' : 'jump';
     } else if (this._isGrounded && !this._isDashing) {
       this.currentAnimation = 'idle';
+      // Apply friction for smooth stopping
+      this.velocity.x *= 0.85;
     }
     
-    // Jump
+    // Jump (only vertical movement)
     if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp')) && this._isGrounded) {
       this.velocity.y = -this.jumpForce;
       this._isGrounded = false;
       this.currentAnimation = 'jump';
     }
     
-    // Dash
+    // Dash (only horizontal for side-scrolling)
     if (input.isKeyJustPressed('ShiftLeft') && this.dashCooldown <= 0) {
       this.dashDuration = this.maxDashDuration;
       this.dashCooldown = this.maxDashCooldown;
       this.currentAnimation = 'dash';
+      // Apply horizontal dash boost
+      this.velocity.x = this.facingDirection * this.dashForce;
     }
     
     // Attack

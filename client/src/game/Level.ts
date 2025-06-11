@@ -5,7 +5,7 @@ export class Level {
   private platforms: Rectangle[] = [];
   private worldBounds = {
     left: -500,
-    right: 2000,
+    right: 3000,
     top: -500,
     bottom: 600
   };
@@ -15,36 +15,42 @@ export class Level {
   }
 
   private generateLevel() {
-    // Ground platforms
+    // Extended ground platforms for side-scrolling
     this.platforms.push(
-      { x: -500, y: 400, width: 800, height: 20 },
-      { x: 400, y: 400, width: 400, height: 20 },
-      { x: 900, y: 400, width: 600, height: 20 },
-      { x: 1600, y: 400, width: 400, height: 20 }
+      { x: -500, y: 400, width: 1000, height: 20 },
+      { x: 600, y: 400, width: 800, height: 20 },
+      { x: 1500, y: 400, width: 800, height: 20 },
+      { x: 2400, y: 400, width: 600, height: 20 }
     );
 
-    // Mid-level platforms
+    // Varied height platforms for platforming challenges
     this.platforms.push(
-      { x: 200, y: 300, width: 150, height: 20 },
-      { x: 500, y: 250, width: 200, height: 20 },
-      { x: 800, y: 200, width: 150, height: 20 },
-      { x: 1100, y: 300, width: 200, height: 20 },
-      { x: 1400, y: 250, width: 150, height: 20 }
+      { x: 200, y: 300, width: 200, height: 20 },
+      { x: 500, y: 250, width: 250, height: 20 },
+      { x: 850, y: 200, width: 200, height: 20 },
+      { x: 1150, y: 300, width: 300, height: 20 },
+      { x: 1550, y: 250, width: 200, height: 20 },
+      { x: 1850, y: 300, width: 250, height: 20 },
+      { x: 2200, y: 200, width: 200, height: 20 }
     );
 
-    // High platforms
+    // Higher platforms for advanced traversal
     this.platforms.push(
-      { x: 300, y: 150, width: 100, height: 20 },
-      { x: 600, y: 100, width: 150, height: 20 },
-      { x: 900, y: 50, width: 100, height: 20 },
-      { x: 1200, y: 150, width: 200, height: 20 }
+      { x: 300, y: 150, width: 150, height: 20 },
+      { x: 650, y: 100, width: 200, height: 20 },
+      { x: 950, y: 50, width: 150, height: 20 },
+      { x: 1300, y: 150, width: 250, height: 20 },
+      { x: 1700, y: 100, width: 150, height: 20 },
+      { x: 2000, y: 150, width: 200, height: 20 }
     );
 
-    // Floating platforms
+    // Small jumping platforms
     this.platforms.push(
-      { x: 450, y: 180, width: 80, height: 20 },
-      { x: 750, y: 120, width: 80, height: 20 },
-      { x: 1050, y: 180, width: 80, height: 20 }
+      { x: 450, y: 180, width: 100, height: 20 },
+      { x: 750, y: 120, width: 100, height: 20 },
+      { x: 1050, y: 180, width: 100, height: 20 },
+      { x: 1450, y: 180, width: 100, height: 20 },
+      { x: 1950, y: 120, width: 100, height: 20 }
     );
   }
 

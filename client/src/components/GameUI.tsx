@@ -41,11 +41,11 @@ export default function GameUI() {
             <h2 className="text-2xl font-bold mb-4">Game Paused</h2>
             <p className="text-gray-300 mb-4">Press ESC to resume</p>
             <div className="space-y-2 text-sm text-gray-400">
-              <p>WASD / Arrow Keys - Move</p>
-              <p>Space - Jump</p>
+              <p>A/D or ←/→ - Move Left/Right</p>
+              <p>Space/W/↑ - Jump</p>
               <p>Shift - Dash</p>
               <p>J - Attack</p>
-              <p>K - Special Attack</p>
+              <p>K - Special Attack (3+ combo)</p>
             </div>
           </div>
         </div>

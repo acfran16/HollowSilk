@@ -16,13 +16,16 @@ export class Camera {
   private shakeTimer: number = 0;
 
   update(deltaTime: number, targetPosition: Vector2) {
-    // Update target position
+    // Update target position for side-scrolling
     this.targetX = targetPosition.x;
     this.targetY = targetPosition.y - 50; // Offset camera slightly up
     
-    // Smooth camera movement
-    this.x += (this.targetX - this.x) * this.smoothness;
-    this.y += (this.targetY - this.y) * this.smoothness;
+    // Smoother horizontal tracking for side-scrolling
+    const horizontalSmoothness = 0.08;
+    const verticalSmoothness = 0.15;
+    
+    this.x += (this.targetX - this.x) * horizontalSmoothness;
+    this.y += (this.targetY - this.y) * verticalSmoothness;
     
     // Update screen shake
     this.updateScreenShake(deltaTime);
