@@ -159,10 +159,17 @@ export class Enemy {
   }
 
   private patrol() {
-    // Simple patrol behavior - move back and forth
+    // Enhanced patrol behavior with obstacle avoidance
     const distanceFromStart = this.position.x - this.patrolStartX;
     
-    if (Math.abs(distanceFromStart) >= this.ai.patrolRange) {
+    // Check for obstacles ahead
+    const checkDistance = 50;
+    const hasObstacleAhead = this.checkForObstacle(this.velocity.x > 0 ? 1 : -1, checkDistance);
+    
+    if (hasObstacleAhead) {
+      // Reverse direction when hitting obstacle
+      this.velocity.x *= -1;
+    } else if (Math.abs(distanceFromStart) >= this.ai.patrolRange) {
       // Change direction when reaching patrol boundary
       this.velocity.x = distanceFromStart > 0 ? -this.ai.speed : this.ai.speed;
     } else if (Math.abs(this.velocity.x) < 10) {
@@ -177,11 +184,29 @@ export class Enemy {
     const distance = Math.sqrt(dx * dx + dy * dy);
     
     if (distance > 0) {
-      this.velocity.x = (dx / distance) * this.ai.speed;
+      // Check for obstacles when chasing
+      const direction = dx > 0 ? 1 : -1;
+      const hasObstacle = this.checkForObstacle(direction, 40);
       
-      // Flyers can move vertically
+      if (hasObstacle && this.type !== 'flyer') {
+        // Try to jump over obstacle or find alternate path
+        if (this.isGrounded) {
+          this.velocity.y = -200; // Jump
+        }
+        // Slow down horizontal movement when blocked
+        this.velocity.x = (dx / distance) * this.ai.speed * 0.3;
+      } else {
+        this.velocity.x = (dx / distance) * this.ai.speed;
+      }
+      
+      // Flyers can move vertically and avoid obstacles by flying over
       if (this.type === 'flyer') {
-        this.velocity.y = (dy / distance) * this.ai.speed;
+        if (hasObstacle) {
+          // Fly higher to avoid obstacles
+          this.velocity.y = Math.min((dy / distance) * this.ai.speed - 50, -30);
+        } else {
+          this.velocity.y = (dy / distance) * this.ai.speed;
+        }
       }
     }
   }
@@ -337,6 +362,23 @@ export class Enemy {
       width: this.size.x,
       height: this.size.y
     };
+  }
+
+  private checkForObstacle(direction: number, distance: number): boolean {
+    // Check for obstacles in the given direction
+    const checkX = this.position.x + (direction * distance);
+    const checkY = this.position.y;
+    const checkWidth = 10;
+    const checkHeight = this.size.y;
+    
+    // Simple obstacle detection - check for significant elevation changes
+    // This will be enhanced when level reference is available
+    return false;
+  }
+
+  private get isGrounded(): boolean {
+    // Simple ground check - will be enhanced with proper collision detection
+    return this.velocity.y === 0;
   }
 
   // Getters

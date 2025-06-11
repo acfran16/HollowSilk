@@ -8,6 +8,7 @@ export interface Rectangle {
   y: number;
   width: number;
   height: number;
+  type?: string;
 }
 
 export interface GameState {

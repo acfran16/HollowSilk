@@ -15,60 +15,76 @@ export class Level {
   }
 
   private generateLevel() {
-    // Main ground level - continuous brick platforms
+    // Main ground level - aligned with buildings at y=420
     this.platforms.push(
-      { x: -500, y: 380, width: 4000, height: 40 }
+      { x: -500, y: 420, width: 4000, height: 40, type: 'brick' }
     );
 
     // Mid-level brick platforms
     this.platforms.push(
-      { x: 150, y: 280, width: 200, height: 30 },
-      { x: 450, y: 280, width: 150, height: 30 },
-      { x: 700, y: 280, width: 250, height: 30 },
-      { x: 1050, y: 280, width: 200, height: 30 },
-      { x: 1350, y: 280, width: 180, height: 30 },
-      { x: 1630, y: 280, width: 220, height: 30 },
-      { x: 1950, y: 280, width: 200, height: 30 },
-      { x: 2250, y: 280, width: 250, height: 30 },
-      { x: 2600, y: 280, width: 200, height: 30 }
+      { x: 150, y: 320, width: 200, height: 30, type: 'brick' },
+      { x: 450, y: 320, width: 150, height: 30, type: 'brick' },
+      { x: 700, y: 320, width: 250, height: 30, type: 'brick' },
+      { x: 1050, y: 320, width: 200, height: 30, type: 'brick' },
+      { x: 1350, y: 320, width: 180, height: 30, type: 'brick' },
+      { x: 1630, y: 320, width: 220, height: 30, type: 'brick' },
+      { x: 1950, y: 320, width: 200, height: 30, type: 'brick' },
+      { x: 2250, y: 320, width: 250, height: 30, type: 'brick' },
+      { x: 2600, y: 320, width: 200, height: 30, type: 'brick' }
     );
 
-    // Upper level platforms
+    // Metal scaffolding platforms
     this.platforms.push(
-      { x: 250, y: 180, width: 150, height: 30 },
-      { x: 500, y: 180, width: 200, height: 30 },
-      { x: 800, y: 180, width: 180, height: 30 },
-      { x: 1080, y: 180, width: 170, height: 30 },
-      { x: 1350, y: 180, width: 200, height: 30 },
-      { x: 1650, y: 180, width: 150, height: 30 },
-      { x: 1900, y: 180, width: 220, height: 30 },
-      { x: 2220, y: 180, width: 180, height: 30 },
-      { x: 2500, y: 180, width: 200, height: 30 }
+      { x: 250, y: 220, width: 150, height: 25, type: 'metal' },
+      { x: 500, y: 220, width: 200, height: 25, type: 'metal' },
+      { x: 800, y: 220, width: 180, height: 25, type: 'metal' },
+      { x: 1080, y: 220, width: 170, height: 25, type: 'metal' },
+      { x: 1350, y: 220, width: 200, height: 25, type: 'metal' },
+      { x: 1650, y: 220, width: 150, height: 25, type: 'metal' },
+      { x: 1900, y: 220, width: 220, height: 25, type: 'metal' },
+      { x: 2220, y: 220, width: 180, height: 25, type: 'metal' },
+      { x: 2500, y: 220, width: 200, height: 25, type: 'metal' }
     );
 
-    // Top level platforms
+    // Wooden construction platforms
     this.platforms.push(
-      { x: 300, y: 80, width: 120, height: 30 },
-      { x: 520, y: 80, width: 140, height: 30 },
-      { x: 760, y: 80, width: 160, height: 30 },
-      { x: 1020, y: 80, width: 130, height: 30 },
-      { x: 1250, y: 80, width: 180, height: 30 },
-      { x: 1530, y: 80, width: 150, height: 30 },
-      { x: 1780, y: 80, width: 170, height: 30 },
-      { x: 2050, y: 80, width: 140, height: 30 },
-      { x: 2290, y: 80, width: 200, height: 30 }
+      { x: 300, y: 120, width: 120, height: 20, type: 'wood' },
+      { x: 520, y: 120, width: 140, height: 20, type: 'wood' },
+      { x: 760, y: 120, width: 160, height: 20, type: 'wood' },
+      { x: 1020, y: 120, width: 130, height: 20, type: 'wood' },
+      { x: 1250, y: 120, width: 180, height: 20, type: 'wood' },
+      { x: 1530, y: 120, width: 150, height: 20, type: 'wood' },
+      { x: 1780, y: 120, width: 170, height: 20, type: 'wood' },
+      { x: 2050, y: 120, width: 140, height: 20, type: 'wood' },
+      { x: 2290, y: 120, width: 200, height: 20, type: 'wood' }
     );
 
-    // Small connector platforms
+    // Small connector platforms (concrete)
     this.platforms.push(
-      { x: 370, y: 230, width: 80, height: 25 },
-      { x: 620, y: 230, width: 80, height: 25 },
-      { x: 870, y: 230, width: 80, height: 25 },
-      { x: 1170, y: 230, width: 80, height: 25 },
-      { x: 1470, y: 230, width: 80, height: 25 },
-      { x: 1770, y: 230, width: 80, height: 25 },
-      { x: 2070, y: 230, width: 80, height: 25 },
-      { x: 2370, y: 230, width: 80, height: 25 }
+      { x: 370, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 620, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 870, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 1170, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 1470, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 1770, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 2070, y: 270, width: 80, height: 25, type: 'concrete' },
+      { x: 2370, y: 270, width: 80, height: 25, type: 'concrete' }
+    );
+
+    // Obstacles for enemy navigation
+    this.platforms.push(
+      // Vertical barriers
+      { x: 600, y: 390, width: 20, height: 30, type: 'obstacle' },
+      { x: 950, y: 390, width: 20, height: 30, type: 'obstacle' },
+      { x: 1300, y: 390, width: 20, height: 30, type: 'obstacle' },
+      { x: 1800, y: 390, width: 20, height: 30, type: 'obstacle' },
+      { x: 2400, y: 390, width: 20, height: 30, type: 'obstacle' },
+      
+      // Construction barriers
+      { x: 750, y: 295, width: 25, height: 25, type: 'obstacle' },
+      { x: 1150, y: 295, width: 25, height: 25, type: 'obstacle' },
+      { x: 1550, y: 295, width: 25, height: 25, type: 'obstacle' },
+      { x: 2150, y: 295, width: 25, height: 25, type: 'obstacle' }
     );
   }
 
@@ -86,12 +102,36 @@ export class Level {
           platform.y + platform.height >= viewBounds.top &&
           platform.y <= viewBounds.bottom) {
         
-        this.renderBrickPlatform(ctx, platform);
+        this.renderPlatformByType(ctx, platform);
       }
     });
 
     // Render environmental details
     this.renderEnvironmentalDetails(ctx, viewBounds);
+  }
+
+  private renderPlatformByType(ctx: CanvasRenderingContext2D, platform: Rectangle) {
+    const type = platform.type || 'brick';
+    
+    switch (type) {
+      case 'brick':
+        this.renderBrickPlatform(ctx, platform);
+        break;
+      case 'metal':
+        this.renderMetalPlatform(ctx, platform);
+        break;
+      case 'wood':
+        this.renderWoodPlatform(ctx, platform);
+        break;
+      case 'concrete':
+        this.renderConcretePlatform(ctx, platform);
+        break;
+      case 'obstacle':
+        this.renderObstacle(ctx, platform);
+        break;
+      default:
+        this.renderBrickPlatform(ctx, platform);
+    }
   }
 
   private renderBrickPlatform(ctx: CanvasRenderingContext2D, platform: Rectangle) {
@@ -135,6 +175,101 @@ export class Level {
     ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
   }
 
+  private renderMetalPlatform(ctx: CanvasRenderingContext2D, platform: Rectangle) {
+    // Metal scaffolding appearance
+    ctx.fillStyle = '#708090';
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    
+    // Metal grid pattern
+    ctx.strokeStyle = '#556B2F';
+    ctx.lineWidth = 2;
+    for (let x = platform.x; x < platform.x + platform.width; x += 20) {
+      ctx.beginPath();
+      ctx.moveTo(x, platform.y);
+      ctx.lineTo(x, platform.y + platform.height);
+      ctx.stroke();
+    }
+    
+    // Metal highlights
+    ctx.fillStyle = '#C0C0C0';
+    ctx.fillRect(platform.x, platform.y, platform.width, 3);
+    
+    // Platform outline
+    ctx.strokeStyle = '#2F4F4F';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+  }
+
+  private renderWoodPlatform(ctx: CanvasRenderingContext2D, platform: Rectangle) {
+    // Wood planks
+    ctx.fillStyle = '#D2691E';
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    
+    // Wood grain lines
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+      const y = platform.y + (platform.height / 4) * (i + 1);
+      ctx.beginPath();
+      ctx.moveTo(platform.x, y);
+      ctx.lineTo(platform.x + platform.width, y);
+      ctx.stroke();
+    }
+    
+    // Wood planks separators
+    ctx.strokeStyle = '#654321';
+    ctx.lineWidth = 2;
+    for (let x = platform.x + 40; x < platform.x + platform.width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, platform.y);
+      ctx.lineTo(x, platform.y + platform.height);
+      ctx.stroke();
+    }
+    
+    // Platform outline
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+  }
+
+  private renderConcretePlatform(ctx: CanvasRenderingContext2D, platform: Rectangle) {
+    // Concrete base
+    ctx.fillStyle = '#696969';
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    
+    // Concrete texture dots
+    ctx.fillStyle = '#778899';
+    for (let i = 0; i < platform.width * platform.height / 100; i++) {
+      const x = platform.x + Math.random() * platform.width;
+      const y = platform.y + Math.random() * platform.height;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    
+    // Platform outline
+    ctx.strokeStyle = '#2F2F2F';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+  }
+
+  private renderObstacle(ctx: CanvasRenderingContext2D, platform: Rectangle) {
+    // Orange and black warning stripes
+    ctx.fillStyle = '#FF4500';
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    
+    // Warning stripes
+    ctx.fillStyle = '#000000';
+    for (let i = 0; i < platform.width; i += 10) {
+      if (Math.floor(i / 10) % 2 === 0) {
+        ctx.fillRect(platform.x + i, platform.y, 5, platform.height);
+      }
+    }
+    
+    // Platform outline
+    ctx.strokeStyle = '#FF0000';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+  }
+
   private renderBackground(ctx: CanvasRenderingContext2D, viewBounds: any) {
     // City sunset gradient background
     const gradient = ctx.createLinearGradient(0, viewBounds.top, 0, viewBounds.bottom);
@@ -157,7 +292,8 @@ export class Level {
   private renderCityBuildings(ctx: CanvasRenderingContext2D, viewBounds: any) {
     ctx.fillStyle = '#1a1a2e';
     
-    // Background city buildings - far layer
+    // Background city buildings - aligned with ground at y=420
+    const groundLevel = 420;
     const buildings = [
       { x: -200, width: 80, height: 120 },
       { x: -100, width: 60, height: 90 },
@@ -189,7 +325,7 @@ export class Level {
     
     buildings.forEach(building => {
       if (building.x + building.width >= viewBounds.left && building.x <= viewBounds.right) {
-        const buildingY = viewBounds.bottom - building.height;
+        const buildingY = groundLevel - building.height;
         ctx.fillRect(building.x, buildingY, building.width, building.height);
         
         // Building windows
