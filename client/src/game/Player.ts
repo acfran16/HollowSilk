@@ -106,7 +106,10 @@ export class Player {
     }
     
     // Dash (only horizontal for side-scrolling)
-    if (input.isKeyJustPressed('ShiftLeft') && this.dashCooldown <= 0) {
+    if (
+      (input.isKeyJustPressed('ShiftLeft') || input.isKeyJustPressed('ShiftRight')) &&
+      this.dashCooldown <= 0
+    ) {
       this.dashDuration = this.maxDashDuration;
       this.dashCooldown = this.maxDashCooldown;
       this.currentAnimation = 'dash';
