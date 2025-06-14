@@ -3,10 +3,14 @@ export class InputManager {
   private justPressedKeys: Set<string> = new Set();
   private justReleasedKeys: Set<string> = new Set();
   private virtualInputs: Set<string> = new Set();
+  private boundHandleKeyDown?: (e: KeyboardEvent) => void;
+  private boundHandleKeyUp?: (e: KeyboardEvent) => void;
 
   initialize() {
-    window.addEventListener('keydown', this.handleKeyDown.bind(this));
-    window.addEventListener('keyup', this.handleKeyUp.bind(this));
+    this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+    this.boundHandleKeyUp = this.handleKeyUp.bind(this);
+    window.addEventListener('keydown', this.boundHandleKeyDown);
+    window.addEventListener('keyup', this.boundHandleKeyUp);
     
     // Prevent default behavior for game keys
     window.addEventListener('keydown', (e) => {
@@ -77,7 +81,11 @@ export class InputManager {
   }
 
   destroy() {
-    window.removeEventListener('keydown', this.handleKeyDown.bind(this));
-    window.removeEventListener('keyup', this.handleKeyUp.bind(this));
+    if (this.boundHandleKeyDown) {
+      window.removeEventListener('keydown', this.boundHandleKeyDown);
+    }
+    if (this.boundHandleKeyUp) {
+      window.removeEventListener('keyup', this.boundHandleKeyUp);
+    }
   }
 }

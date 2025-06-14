@@ -124,9 +124,6 @@ export class GameEngine {
   }
 
   private updateGame(deltaTime: number) {
-    // Update input
-    this.inputManager.update();
-
     // Update player
     this.player.update(deltaTime, this.inputManager);
 
@@ -157,6 +154,9 @@ export class GameEngine {
 
     // Notify state updates
     this.notifyStateUpdate();
+
+    // Update input after game logic
+    this.inputManager.update();
   }
 
   private render() {
