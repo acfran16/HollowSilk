@@ -61,6 +61,8 @@ export class Physics {
 
   private updateEnemyPhysics(enemy: Enemy, level: Level) {
     const enemyBounds = enemy.getBounds();
+    const enemyPos = enemy.getPosition();
+    const enemyVel = enemy.getVelocity();
     const platforms = level.getPlatforms();
     
     // Check ground collision for non-flying enemies
@@ -68,10 +70,10 @@ export class Physics {
       platforms.forEach(platform => {
         if (this.checkCollision(enemyBounds, platform)) {
           const overlapY = (enemyBounds.y + enemyBounds.height) - platform.y;
-          
-          if (overlapY > 0 && overlapY < 20 && enemy.getVelocity().y >= 0) {
-            enemy.getPosition().y = platform.y - enemyBounds.height / 2;
-            enemy.getVelocity().y = 0;
+
+          if (overlapY > 0 && overlapY < 20 && enemyVel.y >= 0) {
+            enemyPos.y = platform.y - enemyBounds.height / 2;
+            enemyVel.y = 0;
           }
         }
       });
@@ -79,14 +81,13 @@ export class Physics {
     
     // World boundaries
     const worldBounds = level.getWorldBounds();
-    const pos = enemy.getPosition();
     
-    if (pos.x < worldBounds.left || pos.x > worldBounds.right) {
+    if (enemyPos.x < worldBounds.left || enemyPos.x > worldBounds.right) {
       // Turn around at world boundaries
-      enemy.getVelocity().x *= -1;
+      enemyVel.x *= -1;
     }
-    
-    if (pos.y > worldBounds.bottom + 100) {
+
+    if (enemyPos.y > worldBounds.bottom + 100) {
       // Remove enemy if it falls too far
       enemy.takeDamage(1000, { x: 0, y: 0 });
     }

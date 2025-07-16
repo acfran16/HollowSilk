@@ -364,6 +364,10 @@ export class Enemy {
     };
   }
 
+  getSize(): Vector2 {
+    return { ...this.size };
+  }
+
   private checkForObstacle(direction: number, distance: number, platforms?: any[]): boolean {
     if (!platforms) return false;
     
