@@ -364,6 +364,10 @@ export class Enemy {
     };
   }
 
+  getSize(): Vector2 {
+    return { ...this.size };
+  }
+
   private checkForObstacle(direction: number, distance: number, platforms?: any[]): boolean {
     if (!platforms) return false;
     
@@ -394,8 +398,8 @@ export class Enemy {
 
   // Getters
   getId(): string { return this.id; }
-  getPosition(): Vector2 { return { ...this.position }; }
-  getVelocity(): Vector2 { return { ...this.velocity }; }
+  getPosition(): Vector2 { return this.position; }
+  getVelocity(): Vector2 { return this.velocity; }
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
   getType(): string { return this.type; }
