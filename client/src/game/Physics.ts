@@ -16,95 +16,93 @@ export class Physics {
     });
   }
 
-  // FIXED: Added deltaTime parameter to method signature
   private updatePlayerPhysics(deltaTime: number, player: Player, level: Level) {
     const platforms = level.getPlatforms();
     const playerPos = player.getPosition();
+    const playerSize = player.getSize();
     const playerVel = player.getVelocity();
-    
+
     // Apply gravity only when not grounded
     if (!player.isGrounded()) {
-      playerVel.y += this.gravity * deltaTime; // FIXED: deltaTime now available
+      playerVel.y += this.gravity * deltaTime; // deltaTime now available
     }
-    
+
     // Update position based on velocity
-    playerPos.x += playerVel.x * deltaTime;
+    playerPos.x += playerVel.x * deltaTime; // Fixed: Use deltaTime here
     playerPos.y += playerVel.y * deltaTime;
-    
-    // Get updated bounds after position change
-    const playerBounds = player.getBounds();
     
     // Check ground collision
     let isGrounded = false;
     
     platforms.forEach(platform => {
       if (this.checkCollision(playerBounds, platform)) {
+        // Recalculate player bounds after horizontal movement
+        const playerBounds = {
+          x: playerPos.x - playerSize.width / 2,
+          y: playerPos.y - playerSize.height / 2,
+          width: playerSize.width,
+          height: playerSize.height,
+        };
+
         // Check if player is falling onto platform from above
         if (
           playerVel.y > 0 && // Falling down
-          playerBounds.y < platform.y && // Player center is above platform
-          playerBounds.y + playerBounds.height > platform.y && // But bottom overlaps
-          playerBounds.y + playerBounds.height < platform.y + platform.height // Not falling through
+          playerBounds.y + playerBounds.height > platform.y && // Bottom of player is below platform top
+          playerBounds.y < platform.y + platform.height // Top of player is above platform bottom
         ) {
           // Snap player to top of platform
-          playerPos.y = platform.y - playerBounds.height / 2;
+          playerPos.y = platform.y - playerSize.height / 2;
           playerVel.y = 0;
           isGrounded = true;
         }
       }
     });
     
-    player.setGrounded(isGrounded);
+    player.setGrounded(isGrounded); // Use corrected variable name
     
     // World boundaries
     const worldBounds = level.getWorldBounds();
     
     // Horizontal boundaries
-    if (playerPos.x - playerBounds.width / 2 < worldBounds.left) {
-      playerPos.x = worldBounds.left + playerBounds.width / 2;
+    if (playerPos.x - playerSize.width / 2 < worldBounds.left) {
+      playerPos.x = worldBounds.left + playerSize.width / 2;
       playerVel.x = Math.max(0, playerVel.x);
-    } else if (playerPos.x + playerBounds.width / 2 > worldBounds.right) {
-      playerPos.x = worldBounds.right - playerBounds.width / 2;
+    } else if (playerPos.x + playerSize.width / 2 > worldBounds.right) {
+      playerPos.x = worldBounds.right - playerSize.width / 2;
       playerVel.x = Math.min(0, playerVel.x);
     }
     
     // Vertical boundaries
-    if (playerPos.y + playerBounds.height / 2 > worldBounds.bottom) {
-      playerPos.y = worldBounds.bottom - playerBounds.height / 2;
+    if (playerPos.y + playerSize.height / 2 > worldBounds.bottom) {
+      playerPos.y = worldBounds.bottom - playerSize.height / 2;
       playerVel.y = 0;
       player.setGrounded(true);
     }
   }
 
-  // FIXED: Added deltaTime parameter to method signature
   private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
-    const enemyPos = enemy.getPosition();
-    const enemyVel = enemy.getVelocity();
-    
-    // Apply gravity to non-flying enemies
-    if (enemy.getType() !== 'flyer') {
-      enemyVel.y += this.gravity * deltaTime;
-    }
-    
-    // Update position
     enemyPos.x += enemyVel.x * deltaTime;
     enemyPos.y += enemyVel.y * deltaTime;
     
-    const enemyBounds = enemy.getBounds();
     const platforms = level.getPlatforms();
     
     // Check ground collision for non-flying enemies
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
-        if (this.checkCollision(enemyBounds, platform)) {
+        if (this.checkCollision(enemy.getBounds(), platform)) {
           if (
             enemyVel.y > 0 &&
-            enemyBounds.y < platform.y &&
-            enemyBounds.y + enemyBounds.height > platform.y
+            enemyBounds.y + enemyBounds.height > platform.y && // Bottom of enemy is below platform top
+            enemyBounds.y < platform.y + platform.height // Top of enemy is above platform bottom
           ) {
-            enemyPos.y = platform.y - enemyBounds.height / 2;
+            // Snap enemy to top of platform
+            enemyPos.y = platform.y - enemySize.height / 2;
             enemyVel.y = 0;
           }
+           // Handle collision from below or sides if needed
+           // This simplified example only handles landing on platforms
+        } else if (enemyVel.y < 0 && this.checkCollision(enemyBounds, platform)) {
+            // Collision from below
         }
       });
     }
@@ -112,19 +110,23 @@ export class Physics {
     // World boundaries
     const worldBounds = level.getWorldBounds();
     
-    if (enemyPos.x - enemyBounds.width / 2 < worldBounds.left) {
-      enemyPos.x = worldBounds.left + enemyBounds.width / 2;
+    // Horizontal boundaries
+    if (enemyPos.x - enemySize.width / 2 < worldBounds.left) {
+      enemyPos.x = worldBounds.left + enemySize.width / 2;
       enemyVel.x = Math.abs(enemyVel.x);
-    } else if (enemyPos.x + enemyBounds.width / 2 > worldBounds.right) {
-      enemyPos.x = worldBounds.right - enemyBounds.width / 2;
+    } else if (enemyPos.x + enemySize.width / 2 > worldBounds.right) {
+      enemyPos.x = worldBounds.right - enemySize.width / 2;
       enemyVel.x = -Math.abs(enemyVel.x);
     }
-    
+
+    // Vertical boundaries (simple check for falling out of bounds)
     if (enemyPos.y > worldBounds.bottom + 100) {
+      // Trigger enemy removal or respawn
       enemy.takeDamage(1000, { x: 0, y: 0 });
     }
   }
 
+  // Helper function to check collision between two rectangles
   private checkCollision(rect1: Rectangle, rect2: Rectangle): boolean {
     return (
       rect1.x < rect2.x + rect2.width &&
