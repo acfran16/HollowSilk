@@ -15,12 +15,12 @@ export class GameEngine {
   private ctx: CanvasRenderingContext2D | null = null;
   private player: Player;
   private enemies: Enemy[] = [];
-  private camera: Camera;
+  private camera!: Camera;
   private particleSystem: ParticleSystem;
-  private level: Level;
-  private inputManager: InputManager;
+  private level: Level | undefined;
+  private inputManager: InputManager | undefined;
   private animationSystem: AnimationSystem;
-  private soundManager: SoundManager;
+  private soundManager!: SoundManager;
   private combat: Combat;
   private physics: Physics;
   
@@ -33,17 +33,19 @@ export class GameEngine {
   private stateUpdateCallbacks: ((state: GameState) => void)[] = [];
 
   constructor() {
-    this.inputManager = new InputManager();
-    this.camera = new Camera();
     this.particleSystem = new ParticleSystem();
-    this.level = new Level();
     this.animationSystem = new AnimationSystem();
-    this.soundManager = new SoundManager();
     this.combat = new Combat();
     this.physics = new Physics();
     
-    // Initialize player at center of screen
-    this.player = new Player({ x: 400, y: 300 });
+    // Initialize player at the beginning of the level on the main ground platform
+    // We initialize the level first to get the world bounds
+    this.level = new Level(1024, 768); // Use a temporary size to get bounds, will be re-initialized
+ if (this.level) {
+ this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
+    } else {
+ this.player = new Player({ x: 0, y: 0 }); // Fallback position
+    }
     
     // Initialize some enemies
     this.initializeEnemies();
@@ -52,8 +54,17 @@ export class GameEngine {
   initialize(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
     this.ctx = ctx;
-    
+
+    this.inputManager = new InputManager();
     this.inputManager.initialize();
+    this.soundManager = new SoundManager();
+    this.soundManager.initialize();
+    // Initialize level with canvas dimensions
+    // Level was already initialized in constructor to get player start position, re-initialize with actual canvas size
+    this.level = new Level(canvas.width, canvas.height);
+    // Initialize camera with the vertical boundary
+    this.camera = new Camera(this.level.getWorldBounds().bottom - 250);
+    
     this.soundManager.initialize();
     
     this.start();
@@ -94,7 +105,7 @@ export class GameEngine {
   }
 
   destroy() {
-    this.stop();
+    this.stop();    if (this.inputManager)
     this.inputManager.destroy();
     this.soundManager.destroy();
   }
@@ -104,7 +115,7 @@ export class GameEngine {
   }
 
   handleVirtualInput(action: string, pressed: boolean) {
-    if (this.inputManager) {
+    if (this.inputManager) { 
       this.inputManager.setVirtualInput(action, pressed);
     }
   }
@@ -125,24 +136,31 @@ export class GameEngine {
 
   private updateGame(deltaTime: number) {
     // Update player
-    this.player.update(deltaTime, this.inputManager);
+    this.player.update(deltaTime, this.inputManager!); // Use definite assignment assertion here
+    if (!this.level) return; // Ensure level is initialized
 
     // Update enemies
     this.enemies.forEach(enemy => {
+      // Add check for level before accessing its properties
+      if (!this.level) {
+        return; 
+      }
       enemy.update(deltaTime, this.player.getPosition(), this.level.getPlatforms());
     });
-
+    
     // Update physics
-    this.physics.update(deltaTime, this.player, this.enemies, this.level);
+ this.physics.update(deltaTime, this.player, this.enemies, this.level!);
 
     // Update combat
-    this.combat.update(deltaTime, this.player, this.enemies, this.particleSystem, this.soundManager);
+    if (this.soundManager) {
+ this.combat.update(deltaTime, this.player, this.enemies, this.particleSystem, this.soundManager!); // Use non-null assertion
+    }
 
     // Update particles
     this.particleSystem.update(deltaTime);
 
     // Update camera
-    this.camera.update(deltaTime, this.player.getPosition());
+    this.camera.update(deltaTime, this.player.getPosition(), this.level.getWorldBounds());
 
     // Update animations
     this.animationSystem.update(deltaTime);
@@ -156,18 +174,16 @@ export class GameEngine {
     this.notifyStateUpdate();
 
     // Clear input at the end so justPressed states remain valid
-    this.inputManager.update();
+    this.inputManager!.update(); // Use definite assignment assertion
   }
 
   private render() {
     if (!this.canvas || !this.ctx) return;
+    if (!this.level) return; // Ensure level is initialized
 
     const ctx = this.ctx;
     const camera = this.camera;
 
-    // Clear canvas
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Save context for camera transform
     ctx.save();
@@ -204,7 +220,7 @@ export class GameEngine {
 
   private renderUI(ctx: CanvasRenderingContext2D) {
     // Debug info
-    if (this.inputManager.isKeyPressed('KeyI')) {
+    if (this.inputManager?.isKeyPressed('KeyI')) { // Use optional chaining
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(10, 10, 200, 120);
       
@@ -220,6 +236,7 @@ export class GameEngine {
   }
 
   private triggerGameOver() {
+    if (!this.soundManager) return; // Add check and return early
     this.soundManager.playSound('death');
     this.camera.shake(20, 1000);
     
@@ -274,18 +291,24 @@ export class GameEngine {
 
   restartGame() {
     // Reset player
-    this.player = new Player({ x: 400, y: 300 });
-    
+    // Reset player to the beginning of the level on the main ground platform
+ if (this.level) {
+ this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
+    } else {
+ this.player = new Player({ x: 0, y: 0 }); // Fallback position
+    }
+
     // Reset enemies
     this.initializeEnemies();
-    
+
     // Reset camera
-    this.camera = new Camera();
-    
+    // Ensure camera is re-initialized after player reset
+ this.camera = new Camera(this.level ? this.level.getWorldBounds().bottom - 250 : 0); // Use a fallback vertical position if level is undefined
+
     // Clear particles
     this.particleSystem.clear();
-    
+
     // Reset combat
     this.combat.reset();
-  }
+ }
 }

@@ -9,6 +9,8 @@ export interface Rectangle {
   width: number;
   height: number;
   type?: string;
+  moving?: boolean;
+  velocity?: Vector2;
 }
 
 export interface GameState {

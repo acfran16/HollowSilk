@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+
 import GameCanvas from "./GameCanvas";
 import GameUI from "./GameUI";
 import MobileControls from "./MobileControls";

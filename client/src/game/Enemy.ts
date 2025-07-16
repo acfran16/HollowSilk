@@ -9,15 +9,14 @@ export class Enemy {
   private size: Vector2;
   private type: string;
   private state: string;
+  private _isGrounded: boolean = false;
   private ai: EnemyAI;
-  
-  // AI state
+
   private patrolStartX: number;
   private targetPosition: Vector2 | null = null;
   private lastSeen: Vector2 | null = null;
   private alertTimer: number = 0;
-  
-  // Animation
+
   private animationTime: number = 0;
   private facingDirection: number = 1;
 
@@ -28,334 +27,110 @@ export class Enemy {
     this.type = enemyType;
     this.state = 'patrol';
     this.patrolStartX = startPosition.x;
-    
-    // Set properties based on enemy type
+
     switch (enemyType) {
       case 'crawler':
-        this.health = 50;
-        this.maxHealth = 50;
+        this.health = this.maxHealth = 50;
         this.size = { x: 32, y: 24 };
-        this.ai = {
-          type: 'patrol',
-          patrolRange: 100,
-          detectionRange: 80,
-          attackRange: 40,
-          speed: 60,
-          attackCooldown: 1.5,
-          lastAttackTime: 0
-        };
+        this.ai = { type: 'patrol', patrolRange: 100, detectionRange: 80, attackRange: 40, speed: 60, attackCooldown: 1.5, lastAttackTime: 0 };
         break;
       case 'flyer':
-        this.health = 30;
-        this.maxHealth = 30;
+        this.health = this.maxHealth = 30;
         this.size = { x: 28, y: 28 };
-        this.ai = {
-          type: 'chase',
-          patrolRange: 150,
-          detectionRange: 120,
-          attackRange: 50,
-          speed: 80,
-          attackCooldown: 1.0,
-          lastAttackTime: 0
-        };
+        this.ai = { type: 'chase', patrolRange: 150, detectionRange: 120, attackRange: 50, speed: 80, attackCooldown: 1.0, lastAttackTime: 0 };
         break;
       case 'guardian':
-        this.health = 100;
-        this.maxHealth = 100;
+        this.health = this.maxHealth = 100;
         this.size = { x: 48, y: 64 };
-        this.ai = {
-          type: 'attack',
-          patrolRange: 50,
-          detectionRange: 150,
-          attackRange: 80,
-          speed: 40,
-          attackCooldown: 2.0,
-          lastAttackTime: 0
-        };
+        this.ai = { type: 'attack', patrolRange: 50, detectionRange: 150, attackRange: 80, speed: 40, attackCooldown: 2.0, lastAttackTime: 0 };
         break;
       default:
-        this.health = 50;
-        this.maxHealth = 50;
+        this.health = this.maxHealth = 50;
         this.size = { x: 32, y: 32 };
-        this.ai = {
-          type: 'patrol',
-          patrolRange: 100,
-          detectionRange: 80,
-          attackRange: 40,
-          speed: 60,
-          attackCooldown: 1.5,
-          lastAttackTime: 0
-        };
+        this.ai = { type: 'patrol', patrolRange: 100, detectionRange: 80, attackRange: 40, speed: 60, attackCooldown: 1.5, lastAttackTime: 0 };
     }
   }
 
-  update(deltaTime: number, playerPosition: Vector2, platforms?: any[]) {
-    // Update AI timers
+  update(deltaTime: number, playerPosition: Vector2, platforms: any[] = []) {
     this.ai.lastAttackTime += deltaTime;
     this.alertTimer = Math.max(0, this.alertTimer - deltaTime);
-    
-    // Calculate distance to player
-    const distanceToPlayer = Math.sqrt(
-      Math.pow(playerPosition.x - this.position.x, 2) +
-      Math.pow(playerPosition.y - this.position.y, 2)
-    );
-    
-    // Update AI state based on player distance
-    this.updateAIState(distanceToPlayer, playerPosition);
-    
-    // Execute AI behavior
-    this.executeAIBehavior(deltaTime, playerPosition, distanceToPlayer, platforms);
-    
-    // Apply gravity (except for flyers)
-    if (this.type !== 'flyer') {
-      this.velocity.y += 600 * deltaTime;
-    }
-    
-    // Update position
-    this.position.x += this.velocity.x * deltaTime;
-    this.position.y += this.velocity.y * deltaTime;
-    
-    // Update facing direction based on movement
-    if (this.velocity.x > 0) this.facingDirection = 1;
-    else if (this.velocity.x < 0) this.facingDirection = -1;
-    
-    // Update animation
-    this.animationTime += deltaTime;
-  }
 
-  private updateAIState(distanceToPlayer: number, playerPosition: Vector2) {
-    if (distanceToPlayer <= this.ai.detectionRange) {
-      this.lastSeen = { ...playerPosition };
-      this.alertTimer = 3.0; // Stay alert for 3 seconds after losing sight
-      
-      if (distanceToPlayer <= this.ai.attackRange && this.ai.lastAttackTime >= this.ai.attackCooldown) {
-        this.state = 'attacking';
-      } else if (distanceToPlayer <= this.ai.detectionRange) {
-        this.state = 'chasing';
-      }
-    } else if (this.alertTimer > 0 && this.lastSeen) {
-      this.state = 'searching';
-    } else {
-      this.state = 'patrol';
-      this.lastSeen = null;
-    }
-  }
-
-  private executeAIBehavior(deltaTime: number, playerPosition: Vector2, distanceToPlayer: number, platforms?: any[]) {
-    switch (this.state) {
-      case 'patrol':
-        this.patrol(platforms);
-        break;
-      case 'chasing':
-        this.chasePlayer(playerPosition, platforms);
-        break;
-      case 'searching':
-        this.searchForPlayer();
-        break;
-      case 'attacking':
-        this.attackPlayer(playerPosition);
-        break;
-    }
-  }
-
-  private patrol(platforms?: any[]) {
-    // Enhanced patrol behavior with obstacle avoidance
-    const distanceFromStart = this.position.x - this.patrolStartX;
-    
-    // Check for obstacles ahead
-    const checkDistance = 50;
-    const hasObstacleAhead = this.checkForObstacle(this.velocity.x > 0 ? 1 : -1, checkDistance, platforms);
-    
-    if (hasObstacleAhead) {
-      // Reverse direction when hitting obstacle
-      this.velocity.x *= -1;
-    } else if (Math.abs(distanceFromStart) >= this.ai.patrolRange) {
-      // Change direction when reaching patrol boundary
-      this.velocity.x = distanceFromStart > 0 ? -this.ai.speed : this.ai.speed;
-    } else if (Math.abs(this.velocity.x) < 10) {
-      // Start moving if standing still
-      this.velocity.x = Math.random() > 0.5 ? this.ai.speed : -this.ai.speed;
-    }
-  }
-
-  private chasePlayer(playerPosition: Vector2, platforms?: any[]) {
     const dx = playerPosition.x - this.position.x;
     const dy = playerPosition.y - this.position.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    if (distance > 0) {
-      // Check for obstacles when chasing
-      const direction = dx > 0 ? 1 : -1;
-      const hasObstacle = this.checkForObstacle(direction, 40, platforms);
-      
-      if (hasObstacle && this.type !== 'flyer') {
-        // Try to jump over obstacle or find alternate path
-        if (this.isGrounded) {
-          this.velocity.y = -200; // Jump
-        }
-        // Slow down horizontal movement when blocked
-        this.velocity.x = (dx / distance) * this.ai.speed * 0.3;
-      } else {
-        this.velocity.x = (dx / distance) * this.ai.speed;
-      }
-      
-      // Flyers can move vertically and avoid obstacles by flying over
-      if (this.type === 'flyer') {
-        if (hasObstacle) {
-          // Fly higher to avoid obstacles
-          this.velocity.y = Math.min((dy / distance) * this.ai.speed - 50, -30);
-        } else {
-          this.velocity.y = (dy / distance) * this.ai.speed;
-        }
-      }
-    }
-  }
+    const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
 
-  private searchForPlayer() {
-    if (this.lastSeen) {
-      const dx = this.lastSeen.x - this.position.x;
-      const distance = Math.abs(dx);
-      
-      if (distance > 10) {
-        this.velocity.x = dx > 0 ? this.ai.speed * 0.5 : -this.ai.speed * 0.5;
-      } else {
-        this.velocity.x = 0;
-      }
-    }
-  }
+    this.executeAIBehavior(deltaTime, playerPosition, distanceToPlayer, platforms);
 
-  private attackPlayer(playerPosition: Vector2) {
-    if (this.ai.lastAttackTime >= this.ai.attackCooldown) {
-      this.ai.lastAttackTime = 0;
-      
-      // Different attack patterns based on enemy type
-      switch (this.type) {
-        case 'crawler':
-          // Lunge attack
-          const dx = playerPosition.x - this.position.x;
-          this.velocity.x = dx > 0 ? this.ai.speed * 2 : -this.ai.speed * 2;
-          break;
-        case 'flyer':
-          // Dive attack
-          this.velocity.y = this.ai.speed * 1.5;
-          break;
-        case 'guardian':
-          // Stomp attack
-          this.velocity.y = -200;
-          break;
-      }
+    if (this.type !== 'flyer') {
+      this.velocity.y += 800 * deltaTime;
     }
+
+    const previousPosition = { ...this.position };
+    this.position.x += this.velocity.x * deltaTime;
+    this.position.y += this.velocity.y * deltaTime;
+
+    this.handlePlatformCollision(platforms, previousPosition);
+    this.animationTime += deltaTime;
   }
 
   render(ctx: CanvasRenderingContext2D) {
     ctx.save();
-    
-    // Flip sprite based on facing direction
     if (this.facingDirection === -1) {
       ctx.scale(-1, 1);
       ctx.translate(-this.position.x * 2 - this.size.x, 0);
     }
-    
-    // Choose color based on enemy type and state
+
     let color = '#ff6666';
-    switch (this.type) {
-      case 'crawler':
-        color = this.state === 'attacking' ? '#ff4444' : '#ff6666';
-        break;
-      case 'flyer':
-        color = this.state === 'attacking' ? '#4444ff' : '#6666ff';
-        break;
-      case 'guardian':
-        color = this.state === 'attacking' ? '#ff8844' : '#ffaa66';
-        break;
-    }
-    
-    // Add alert indicator
-    if (this.state === 'chasing' || this.state === 'attacking') {
+    if (this.state === 'attacking') {
+      color = this.type === 'guardian' ? '#ff8844' : '#ff4444';
+    } else if (this.state === 'chasing' || this.state === 'searching') {
       color = '#ff4444';
     }
-    
-    // Draw enemy
+
     ctx.fillStyle = color;
-    ctx.fillRect(
-      this.position.x - this.size.x / 2,
-      this.position.y - this.size.y / 2,
-      this.size.x,
-      this.size.y
-    );
-    
-    // Draw health bar
+    ctx.fillRect(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.size.x, this.size.y);
+
     const healthBarWidth = Math.max(20, this.size.x);
-    const healthBarHeight = 3;
     const healthPercentage = this.health / this.maxHealth;
-    
     if (healthPercentage < 1) {
       ctx.fillStyle = '#333';
-      ctx.fillRect(
-        this.position.x - healthBarWidth / 2,
-        this.position.y - this.size.y / 2 - 8,
-        healthBarWidth,
-        healthBarHeight
-      );
-      
-      ctx.fillStyle = healthPercentage > 0.5 ? '#44ff44' : (healthPercentage > 0.25 ? '#ffff44' : '#ff4444');
-      ctx.fillRect(
-        this.position.x - healthBarWidth / 2,
-        this.position.y - this.size.y / 2 - 8,
-        healthBarWidth * healthPercentage,
-        healthBarHeight
-      );
+      ctx.fillRect(this.position.x - healthBarWidth / 2, this.position.y - this.size.y / 2 - 8, healthBarWidth, 3);
+      ctx.fillStyle = healthPercentage > 0.5 ? '#44ff44' : healthPercentage > 0.25 ? '#ffff44' : '#ff4444';
+      ctx.fillRect(this.position.x - healthBarWidth / 2, this.position.y - this.size.y / 2 - 8, healthBarWidth * healthPercentage, 3);
     }
-    
-    // Draw alert indicator
+
     if (this.state === 'chasing' || this.state === 'searching') {
       ctx.fillStyle = '#ffff44';
       ctx.beginPath();
       ctx.arc(this.position.x, this.position.y - this.size.y / 2 - 15, 3, 0, Math.PI * 2);
       ctx.fill();
     }
-    
     ctx.restore();
   }
 
   getAttackHitBox(): HitBox | null {
     if (this.state !== 'attacking') return null;
-    
-    let damage = 20;
-    let knockback = { x: this.facingDirection * 100, y: -30 };
-    
-    switch (this.type) {
-      case 'guardian':
-        damage = 35;
-        knockback = { x: this.facingDirection * 200, y: -100 };
-        break;
-      case 'flyer':
-        damage = 15;
-        knockback = { x: this.facingDirection * 80, y: -20 };
-        break;
-    }
-    
+    const damage = this.type === 'guardian' ? 35 : this.type === 'flyer' ? 15 : 20;
+    const knockback = this.type === 'guardian' ? { x: this.facingDirection * 200, y: -100 } : { x: this.facingDirection * 100, y: -30 };
     return {
       x: this.position.x - this.ai.attackRange / 2,
       y: this.position.y - this.size.y / 2,
       width: this.ai.attackRange,
       height: this.size.y,
-      damage: damage,
-      knockback: knockback
+      damage,
+      knockback
     };
   }
 
   takeDamage(damage: number, knockback: Vector2) {
     this.health = Math.max(0, this.health - damage);
-    this.velocity.x += knockback.x * 0.5; // Enemies are heavier
+    this.velocity.x += knockback.x * 0.5;
     this.velocity.y += knockback.y * 0.5;
-    
-    // Become aggressive when hit
     this.alertTimer = 5.0;
     this.state = 'chasing';
   }
 
-  getBounds() {
+  getBounds(): { x: number; y: number; width: number; height: number } {
     return {
       x: this.position.x - this.size.x / 2,
       y: this.position.y - this.size.y / 2,
@@ -364,41 +139,223 @@ export class Enemy {
     };
   }
 
-  private checkForObstacle(direction: number, distance: number, platforms?: any[]): boolean {
-    if (!platforms) return false;
-    
-    // Check for obstacles in the given direction
-    const checkX = this.position.x + (direction * distance);
+  private attackPlayer(playerPosition: Vector2) {
+    this.velocity.x = 0;
+    if (this.type === 'flyer') this.velocity.y = 0;
+  }
+
+  private checkForObstacle(direction: number, distance: number, platforms: any[] = []): boolean {
+    const checkX = this.position.x + direction * distance;
     const checkY = this.position.y;
-    const checkWidth = 15;
-    const checkHeight = this.size.y;
-    
-    // Check for collision with obstacle-type platforms
     for (const platform of platforms) {
-      if (platform.type === 'obstacle' &&
-          checkX < platform.x + platform.width &&
-          checkX + checkWidth > platform.x &&
-          checkY < platform.y + platform.height &&
-          checkY + checkHeight > platform.y) {
-        return true;
-      }
+      const bounds = platform.getBounds ? platform.getBounds() : platform;
+      const inX = checkX >= bounds.x && checkX <= bounds.x + bounds.width;
+      const inY = checkY >= bounds.y && checkY <= bounds.y + bounds.height;
+      if (inX && inY) return true;
     }
-    
     return false;
   }
 
-  private get isGrounded(): boolean {
-    // Simple ground check - will be enhanced with proper collision detection
-    return this.velocity.y === 0;
+  private executeAIBehavior(deltaTime: number, playerPosition: Vector2, distanceToPlayer: number, platforms: any[] = []) {
+    switch (this.state) {
+      case 'patrol': this.patrol(platforms); break;
+      case 'chasing': this.chasePlayer(playerPosition, platforms); break;
+      case 'searching': this.searchForPlayer(); break;
+      case 'attacking': this.attackPlayer(playerPosition); break;
+    }
   }
 
-  // Getters
-  getId(): string { return this.id; }
-  getPosition(): Vector2 { return { ...this.position }; }
-  getVelocity(): Vector2 { return { ...this.velocity }; }
-  getHealth(): number { return this.health; }
-  getMaxHealth(): number { return this.maxHealth; }
-  getType(): string { return this.type; }
-  getState(): string { return this.state; }
-  isDead(): boolean { return this.health <= 0; }
+  getId() { return this.id; }
+  getPosition() { return { ...this.position }; }
+  getVelocity() { return { ...this.velocity }; }
+  getHealth() { return this.health; }
+  getMaxHealth() { return this.maxHealth; }
+  getType() { return this.type; }
+  getState() { return this.state; }
+  isDead() { return this.health <= 0; }
+
+  private get isGrounded() { return this._isGrounded; }
+
+  private patrol(platforms: any[] = []) {
+    const distanceFromStart = this.position.x - this.patrolStartX;
+    const direction = this.velocity.x >= 0 ? 1 : -1;
+    const obstacleAhead = this.checkForObstacle(direction, 50, platforms);
+
+    if (obstacleAhead || Math.abs(distanceFromStart) >= this.ai.patrolRange) {
+      this.velocity.x = -this.velocity.x || this.ai.speed * (Math.random() > 0.5 ? 1 : -1);
+    } else if (this.isGrounded && Math.abs(this.velocity.x) < 1) {
+      this.velocity.x = this.ai.speed * (Math.random() > 0.5 ? 1 : -1);
+    }
+
+    this.facingDirection = this.velocity.x > 0 ? 1 : -1;
+  }
+
+  private chasePlayer(playerPosition: Vector2, platforms: any[] = []) {
+    const dx = playerPosition.x - this.position.x;
+    const dy = playerPosition.y - this.position.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const direction = dx > 0 ? 1 : -1;
+
+    const hasObstacle = this.checkForObstacle(direction, 40, platforms);
+
+    if (hasObstacle && this.type !== 'flyer' && this.isGrounded) {
+      this.velocity.y = -300;
+    }
+
+    this.velocity.x = (dx / distance) * this.ai.speed * (hasObstacle ? 0.3 : 1);
+
+    if (this.type === 'flyer') {
+      this.velocity.y = (dy / distance) * this.ai.speed;
+    }
+
+    this.facingDirection = this.velocity.x > 0 ? 1 : -1;
+  }
+
+ updateAIState(deltaTime: number, player: any, level: any) {
+    this.ai.lastAttackTime += deltaTime;
+    this.alertTimer = Math.max(0, this.alertTimer - deltaTime);
+
+    const playerPosition = player.getPosition();
+    const dx = playerPosition.x - this.position.x;
+    const dy = playerPosition.y - this.position.y;
+    const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
+
+    const canSeePlayer = distanceToPlayer <= this.ai.detectionRange; // Simplistic line of sight for now
+
+    switch (this.state) {
+      case 'patrol':
+        if (canSeePlayer) {
+          this.state = 'chasing';
+          this.lastSeen = { ...playerPosition };
+        }
+        break;
+      case 'chasing':
+        if (distanceToPlayer <= this.ai.attackRange && this.ai.lastAttackTime >= this.ai.attackCooldown) {
+          this.state = 'attacking';
+          this.ai.lastAttackTime = 0;
+        } else if (!canSeePlayer && this.alertTimer <= 0) {
+          this.state = 'searching';
+        }
+        this.lastSeen = { ...playerPosition }; // Update last seen position
+        break;
+      case 'searching':
+        if (canSeePlayer) {
+          this.state = 'chasing';
+          this.lastSeen = { ...playerPosition };
+        } else if (this.alertTimer <= 0) {
+          this.state = 'patrol';
+          this.lastSeen = null;
+        }
+        break;
+      case 'attacking':
+        if (distanceToPlayer > this.ai.attackRange) {
+          this.state = 'chasing';
+        } else if (this.ai.lastAttackTime >= this.ai.attackCooldown) {
+           // Allow continuous attack if player stays in range
+           this.ai.lastAttackTime = 0;
+        }
+        break;
+    }
+  }
+
+  // Assuming a method to check line of sight could be added later,
+  // potentially using raycasting against level geometry.
+  // private checkLineOfSight(playerPosition: Vector2, level: any): boolean {
+  //   // Raycasting logic here
+  //   return true; // Placeholder
+  // }
+
+  private searchForPlayer() {
+    if (this.lastSeen) {
+      const dx = this.lastSeen.x - this.position.x;
+      this.velocity.x = Math.abs(dx) > 10 ? (dx > 0 ? this.ai.speed * 0.5 : -this.ai.speed * 0.5) : 0;
+      this.facingDirection = this.velocity.x > 0 ? 1 : -1;
+    }
+  }
+
+  private handlePlatformCollision(platforms: any[], previousPosition: Vector2) {
+    this._isGrounded = false;
+    if (!platforms || this.type === 'flyer') return;
+
+    for (const platform of platforms) {
+      if (typeof platform.getVertices !== 'function') continue;
+      const result = this.checkCollisionSAT(platform);
+      if (result.collided && result.mtv) {
+        this.position.x += result.mtv.x;
+        this.position.y += result.mtv.y;
+
+        if (Math.abs(result.mtv.y) > Math.abs(result.mtv.x)) {
+          this.velocity.y = 0;
+          if (result.mtv.y < 0) this._isGrounded = true;
+        } else {
+          this.velocity.x = 0;
+        }
+      }
+    }
+  }
+
+  private getVertices(): Vector2[] {
+    const hw = this.size.x / 2, hh = this.size.y / 2;
+    const x = this.position.x, y = this.position.y;
+    return [
+      { x: x - hw, y: y - hh },
+      { x: x + hw, y: y - hh },
+      { x: x + hw, y: y + hh },
+      { x: x - hw, y: y + hh }
+    ];
+  }
+
+  private getSeparatingAxes(other: { getVertices(): Vector2[] }): Vector2[] {
+    const axes: Vector2[] = [];
+    const verts = this.getVertices();
+    for (let i = 0; i < verts.length; i++) {
+      const p1 = verts[i], p2 = verts[(i + 1) % verts.length];
+      const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+      const normal = { x: -edge.y, y: edge.x };
+      const len = Math.sqrt(normal.x ** 2 + normal.y ** 2);
+      axes.push({ x: normal.x / len, y: normal.y / len });
+    }
+    return axes;
+  }
+
+  private static projectPolygon(verts: Vector2[], axis: Vector2): { min: number, max: number } {
+    let min = Infinity, max = -Infinity;
+    for (const v of verts) {
+      const proj = v.x * axis.x + v.y * axis.y;
+      min = Math.min(min, proj);
+      max = Math.max(max, proj);
+    }
+    return { min, max };
+  }
+
+  private checkCollisionSAT(other: { getVertices(): Vector2[] }): { collided: boolean, mtv?: Vector2 } {
+    const axes = this.getSeparatingAxes(other);
+    let minOverlap = Infinity;
+    let mtvAxis: Vector2 | undefined;
+
+    for (const axis of axes) {
+      const projA = Enemy.projectPolygon(this.getVertices(), axis);
+      const projB = Enemy.projectPolygon(other.getVertices(), axis);
+      const overlap = Math.max(0, Math.min(projA.max, projB.max) - Math.max(projA.min, projB.min));
+
+      if (overlap === 0) return { collided: false };
+      if (overlap < minOverlap) {
+        minOverlap = overlap;
+        mtvAxis = axis;
+      }
+    }
+
+    if (mtvAxis) {
+      const centerA = this.position;
+      const centerB = other.getVertices().reduce((sum, v) => ({ x: sum.x + v.x, y: sum.y + v.y }), { x: 0, y: 0 });
+      centerB.x /= 4; centerB.y /= 4;
+      const dir = { x: centerB.x - centerA.x, y: centerB.y - centerA.y };
+      if (dir.x * mtvAxis.x + dir.y * mtvAxis.y < 0) {
+        mtvAxis.x *= -1; mtvAxis.y *= -1;
+      }
+      return { collided: true, mtv: { x: mtvAxis.x * minOverlap, y: mtvAxis.y * minOverlap } };
+    }
+
+    return { collided: false };
+  }
 }

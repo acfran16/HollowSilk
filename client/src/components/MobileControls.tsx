@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../hooks/use-is-mobile';
 
 interface MobileControlsProps {
@@ -8,6 +8,7 @@ interface MobileControlsProps {
 export default function MobileControls({ onInput }: MobileControlsProps) {
   const isMobile = useIsMobile();
   const [activeButtons, setActiveButtons] = useState<Set<string>>(new Set());
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const touchStartRef = useRef<{ [key: string]: number }>({});
 
   if (!isMobile) return null;
@@ -47,8 +48,10 @@ export default function MobileControls({ onInput }: MobileControlsProps) {
         : 'bg-blue-500 border-blue-300 shadow-lg active:scale-95'
     }`;
 
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50">
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+
+ return (
+    <div className="fixed inset-0 pointer-events-none z-50 p-4"> {/* Added padding */}
       {/* Movement Controls - Left Side */}
       <div className="absolute bottom-6 left-6 pointer-events-auto">
         {/* D-Pad */}

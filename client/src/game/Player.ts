@@ -92,18 +92,20 @@ export class Player {
       this.velocity.x = moveSpeed;
       this.facingDirection = 1;
       this.currentAnimation = this._isGrounded ? 'run' : 'jump';
-    } else if (this._isGrounded && !this._isDashing) {
+    } else if (!(input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft') || input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) && !this._isDashing) {
       this.currentAnimation = 'idle';
-      // Apply friction for smooth stopping
-      this.velocity.x *= 0.85;
+ if (Math.abs(this.velocity.x) < 10) { this.velocity.x = 0; }
     }
     
-    // Jump (only vertical movement)
-    if ((input.isKeyPressed('Space') || input.isKeyPressed('KeyW') || input.isKeyPressed('ArrowUp') || input.isKeyPressed(' ')) && this._isGrounded) {
+    // Vertical movement for flying
+    if ((input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp')) && this._isGrounded) {
       this.velocity.y = -this.jumpForce;
-      this._isGrounded = false;
-      this.currentAnimation = 'jump';
+      this._isGrounded = false; // Player is no longer grounded after jumping
     }
+
+    // Reset vertical velocity if not grounded and not affected by external forces (like knockback)
+    // This line is commented out to allow gravity to affect the player when not grounded.
+    // if (!this._isGrounded && !this._isDashing && Math.abs(this.velocity.y) < 10) { this.velocity.y = 0; }
     
     // Dash (only horizontal for side-scrolling)
     if (
@@ -162,14 +164,15 @@ export class Player {
 
   render(ctx: CanvasRenderingContext2D) {
     ctx.save();
-    
+
+    // Translate to the player's position
+    ctx.translate(this.position.x, this.position.y);
+
     // Flip sprite based on facing direction
     if (this.facingDirection === -1) {
       ctx.scale(-1, 1);
-      ctx.translate(-this.position.x * 2 - this.size.x, 0);
     }
-    
-    // Draw player rectangle (placeholder for sprite)
+
     ctx.fillStyle = this._isDashing ? '#4488ff' : (this._isAttacking ? '#ff4444' : '#44ff44');
     ctx.fillRect(
       this.position.x - this.size.x / 2,
@@ -177,32 +180,38 @@ export class Player {
       this.size.x,
       this.size.y
     );
-    
-    // Draw health bar above player
-    const healthBarWidth = 40;
-    const healthBarHeight = 4;
-    const healthPercentage = this.health / this.maxHealth;
-    
-    ctx.fillStyle = '#333';
-    ctx.fillRect(
-      this.position.x - healthBarWidth / 2,
-      this.position.y - this.size.y / 2 - 10,
-      healthBarWidth,
-      healthBarHeight
-    );
-    
-    ctx.fillStyle = healthPercentage > 0.5 ? '#44ff44' : (healthPercentage > 0.25 ? '#ffff44' : '#ff4444');
-    ctx.fillRect(
-      this.position.x - healthBarWidth / 2,
-      this.position.y - this.size.y / 2 - 10,
-      healthBarWidth * healthPercentage,
-      healthBarHeight
-    );
-    
+
+    // Draw player rectangle (placeholder for sprite) centered at the origin after translation
+    ctx.fillStyle = this._isDashing ? '#4488ff' : (this._isAttacking ? '#ff4444' : '#44ff44');
+    ctx.fillRect(-this.size.x / 2, -this.size.y / 2, this.size.x, this.size.y);
+
+    // Commented out health bar rendering
+    /*
+        // Draw health bar above player
+        const healthBarWidth = 40;
+        const healthBarHeight = 4;
+        const healthPercentage = this.health / this.maxHealth;
+
+        ctx.fillStyle = '#333';
+        ctx.fillRect(
+          this.position.x - healthBarWidth / 2,
+          this.position.y - this.size.y / 2 - 10,
+          healthBarWidth,
+          healthBarHeight
+        );
+
+        ctx.fillStyle = healthPercentage > 0.5 ? '#44ff44' : (healthPercentage > 0.25 ? '#ffff44' : '#ff4444');
+        ctx.fillRect(
+          this.position.x - healthBarWidth / 2,
+          this.position.y - this.size.y / 2 - 10,
+          healthBarWidth * healthPercentage,
+          healthBarHeight
+        );
+    */
     ctx.restore();
-    
+
     // Draw attack hitbox when attacking
-    if (this._isAttacking) {
+    if (this._isAttacking) { // Check if attacking to draw hitbox
       const hitbox = this.getAttackHitBox();
       ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
       ctx.lineWidth = 2;
