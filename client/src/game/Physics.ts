@@ -81,7 +81,7 @@ export class Physics {
   }
 
   private updateEnemyPhysics(enemy: Enemy, level: Level) {
-    const enemyBounds = enemy.getBounds();
+  private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
     const platforms = level.getPlatforms();
     
     // Check ground collision for non-flying enemies
