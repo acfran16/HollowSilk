@@ -1,4 +1,4 @@
-import { Vector2, EnemyAI, HitBox } from "./types";
+import { Vector2, EnemyAI, HitBox, Rectangle } from "./types";
 
 export class Enemy {
   private id: string;
@@ -355,13 +355,17 @@ export class Enemy {
     this.state = 'chasing';
   }
 
-  getBounds() {
+  getBounds(): Rectangle {
     return {
       x: this.position.x - this.size.x / 2,
       y: this.position.y - this.size.y / 2,
       width: this.size.x,
       height: this.size.y
     };
+  }
+
+  getSize(): Vector2 {
+    return { ...this.size };
   }
 
   private checkForObstacle(direction: number, distance: number, platforms?: any[]): boolean {
@@ -394,8 +398,8 @@ export class Enemy {
 
   // Getters
   getId(): string { return this.id; }
-  getPosition(): Vector2 { return { ...this.position }; }
-  getVelocity(): Vector2 { return { ...this.velocity }; }
+  getPosition(): Vector2 { return this.position; }
+  getVelocity(): Vector2 { return this.velocity; }
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
   getType(): string { return this.type; }

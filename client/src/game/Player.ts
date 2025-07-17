@@ -1,4 +1,4 @@
-import { Vector2, HitBox, Animation } from "./types";
+import { Vector2, HitBox, Animation, Rectangle } from "./types";
 import { InputManager } from "./InputManager";
 
 export class Player {
@@ -238,13 +238,17 @@ export class Player {
     this._isGrounded = grounded;
   }
 
-  getBounds() {
+  getBounds(): Rectangle {
     return {
       x: this.position.x - this.size.x / 2,
       y: this.position.y - this.size.y / 2,
       width: this.size.x,
       height: this.size.y
     };
+  }
+
+  getSize(): Vector2 {
+    return { ...this.size };
   }
 
   // Getters
