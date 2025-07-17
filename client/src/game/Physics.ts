@@ -81,6 +81,7 @@ export class Physics {
   }
 
   private updateEnemyPhysics(enemy: Enemy, level: Level) {
+  }
   private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
     const platforms = level.getPlatforms();
     
