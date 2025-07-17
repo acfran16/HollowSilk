@@ -139,6 +139,10 @@ export class Enemy {
     };
   }
 
+  getSize(): Vector2 {
+    return { ...this.size };
+  }
+
   private attackPlayer(playerPosition: Vector2) {
     this.velocity.x = 0;
     if (this.type === 'flyer') this.velocity.y = 0;
@@ -305,57 +309,18 @@ export class Enemy {
     ];
   }
 
-  private getSeparatingAxes(other: { getVertices(): Vector2[] }): Vector2[] {
-    const axes: Vector2[] = [];
-    const verts = this.getVertices();
-    for (let i = 0; i < verts.length; i++) {
-      const p1 = verts[i], p2 = verts[(i + 1) % verts.length];
-      const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
-      const normal = { x: -edge.y, y: edge.x };
-      const len = Math.sqrt(normal.x ** 2 + normal.y ** 2);
-      axes.push({ x: normal.x / len, y: normal.y / len });
-    }
-    return axes;
+  private get isGrounded(): boolean {
+    // Simple ground check - will be enhanced with proper collision detection
+    return this.velocity.y === 0;
   }
 
-  private static projectPolygon(verts: Vector2[], axis: Vector2): { min: number, max: number } {
-    let min = Infinity, max = -Infinity;
-    for (const v of verts) {
-      const proj = v.x * axis.x + v.y * axis.y;
-      min = Math.min(min, proj);
-      max = Math.max(max, proj);
-    }
-    return { min, max };
-  }
-
-  private checkCollisionSAT(other: { getVertices(): Vector2[] }): { collided: boolean, mtv?: Vector2 } {
-    const axes = this.getSeparatingAxes(other);
-    let minOverlap = Infinity;
-    let mtvAxis: Vector2 | undefined;
-
-    for (const axis of axes) {
-      const projA = Enemy.projectPolygon(this.getVertices(), axis);
-      const projB = Enemy.projectPolygon(other.getVertices(), axis);
-      const overlap = Math.max(0, Math.min(projA.max, projB.max) - Math.max(projA.min, projB.min));
-
-      if (overlap === 0) return { collided: false };
-      if (overlap < minOverlap) {
-        minOverlap = overlap;
-        mtvAxis = axis;
-      }
-    }
-
-    if (mtvAxis) {
-      const centerA = this.position;
-      const centerB = other.getVertices().reduce((sum, v) => ({ x: sum.x + v.x, y: sum.y + v.y }), { x: 0, y: 0 });
-      centerB.x /= 4; centerB.y /= 4;
-      const dir = { x: centerB.x - centerA.x, y: centerB.y - centerA.y };
-      if (dir.x * mtvAxis.x + dir.y * mtvAxis.y < 0) {
-        mtvAxis.x *= -1; mtvAxis.y *= -1;
-      }
-      return { collided: true, mtv: { x: mtvAxis.x * minOverlap, y: mtvAxis.y * minOverlap } };
-    }
-
-    return { collided: false };
-  }
+  // Getters
+  getId(): string { return this.id; }
+  getPosition(): Vector2 { return { ...this.position }; }
+  getVelocity(): Vector2 { return { ...this.velocity }; }
+  getHealth(): number { return this.health; }
+  getMaxHealth(): number { return this.maxHealth; }
+  getType(): string { return this.type; }
+  getState(): string { return this.state; }
+  isDead(): boolean { return this.health <= 0; }
 }

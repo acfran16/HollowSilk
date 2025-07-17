@@ -80,48 +80,35 @@ export class Physics {
     }
   }
 
-  private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
-    enemyPos.x += enemyVel.x * deltaTime;
-    enemyPos.y += enemyVel.y * deltaTime;
-    
+  private updateEnemyPhysics(enemy: Enemy, level: Level) {
+    const enemyBounds = enemy.getBounds();
     const platforms = level.getPlatforms();
     
     // Check ground collision for non-flying enemies
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
-        if (this.checkCollision(enemy.getBounds(), platform)) {
-          if (
-            enemyVel.y > 0 &&
-            enemyBounds.y + enemyBounds.height > platform.y && // Bottom of enemy is below platform top
-            enemyBounds.y < platform.y + platform.height // Top of enemy is above platform bottom
-          ) {
-            // Snap enemy to top of platform
-            enemyPos.y = platform.y - enemySize.height / 2;
-            enemyVel.y = 0;
+        if (this.checkCollision(enemyBounds, platform)) {
+          const overlapY = (enemyBounds.y + enemyBounds.height) - platform.y;
+          
+          if (overlapY > 0 && overlapY < 20 && enemy.getVelocity().y >= 0) {
+            enemy.getPosition().y = platform.y - enemyBounds.height / 2;
+            enemy.getVelocity().y = 0;
           }
-           // Handle collision from below or sides if needed
-           // This simplified example only handles landing on platforms
-        } else if (enemyVel.y < 0 && this.checkCollision(enemyBounds, platform)) {
-            // Collision from below
         }
       });
     }
     
     // World boundaries
     const worldBounds = level.getWorldBounds();
+    const pos = enemy.getPosition();
     
-    // Horizontal boundaries
-    if (enemyPos.x - enemySize.width / 2 < worldBounds.left) {
-      enemyPos.x = worldBounds.left + enemySize.width / 2;
-      enemyVel.x = Math.abs(enemyVel.x);
-    } else if (enemyPos.x + enemySize.width / 2 > worldBounds.right) {
-      enemyPos.x = worldBounds.right - enemySize.width / 2;
-      enemyVel.x = -Math.abs(enemyVel.x);
+    if (pos.x < worldBounds.left || pos.x > worldBounds.right) {
+      // Turn around at world boundaries
+      enemy.getVelocity().x *= -1;
     }
-
-    // Vertical boundaries (simple check for falling out of bounds)
-    if (enemyPos.y > worldBounds.bottom + 100) {
-      // Trigger enemy removal or respawn
+    
+    if (pos.y > worldBounds.bottom + 100) {
+      // Remove enemy if it falls too far
       enemy.takeDamage(1000, { x: 0, y: 0 });
     }
   }
