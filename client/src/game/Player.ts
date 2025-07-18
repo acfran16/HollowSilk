@@ -256,10 +256,6 @@ export class Player {
     };
   }
 
-  getSize(): Vector2 {
-    return { ...this.size };
-  }
-
   // Getters
   getPosition(): Vector2 { return this.position; }
   getVelocity(): Vector2 { return this.velocity; }

@@ -139,10 +139,6 @@ export class Enemy {
     };
   }
 
-  getSize(): Vector2 {
-    return { ...this.size };
-  }
-
   private attackPlayer(playerPosition: Vector2) {
     this.velocity.x = 0;
     if (this.type === 'flyer') this.velocity.y = 0;

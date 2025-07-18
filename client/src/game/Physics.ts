@@ -19,7 +19,7 @@ export class Physics {
   private updatePlayerPhysics(deltaTime: number, player: Player, level: Level) {
     const platforms = level.getPlatforms();
     const playerPos = player.getPosition();
-    const playerSize = player.getSize();
+    const { width: playerWidth, height: playerHeight } = player.getBounds();
     const playerVel = player.getVelocity();
 
     // Apply gravity only when not grounded
@@ -33,10 +33,10 @@ export class Physics {
     
     // Calculate player bounds after movement
     const playerBounds = {
-      x: playerPos.x - playerSize.width / 2,
-      y: playerPos.y - playerSize.height / 2,
-      width: playerSize.width,
-      height: playerSize.height,
+      x: playerPos.x - playerWidth / 2,
+      y: playerPos.y - playerHeight / 2,
+      width: playerWidth,
+      height: playerHeight,
     };
     
     // Check ground collision
@@ -51,7 +51,7 @@ export class Physics {
           playerBounds.y < platform.y + platform.height // Top of player is above platform bottom
         ) {
           // Snap player to top of platform
-          playerPos.y = platform.y - playerSize.height / 2;
+          playerPos.y = platform.y - playerHeight / 2;
           playerVel.y = 0;
           isGrounded = true;
         }
@@ -64,17 +64,17 @@ export class Physics {
     const worldBounds = level.getWorldBounds();
     
     // Horizontal boundaries
-    if (playerPos.x - playerSize.width / 2 < worldBounds.left) {
-      playerPos.x = worldBounds.left + playerSize.width / 2;
+    if (playerPos.x - playerWidth / 2 < worldBounds.left) {
+      playerPos.x = worldBounds.left + playerWidth / 2;
       playerVel.x = Math.max(0, playerVel.x);
-    } else if (playerPos.x + playerSize.width / 2 > worldBounds.right) {
-      playerPos.x = worldBounds.right - playerSize.width / 2;
+    } else if (playerPos.x + playerWidth / 2 > worldBounds.right) {
+      playerPos.x = worldBounds.right - playerWidth / 2;
       playerVel.x = Math.min(0, playerVel.x);
     }
-    
+
     // Vertical boundaries
-    if (playerPos.y + playerSize.height / 2 > worldBounds.bottom) {
-      playerPos.y = worldBounds.bottom - playerSize.height / 2;
+    if (playerPos.y + playerHeight / 2 > worldBounds.bottom) {
+      playerPos.y = worldBounds.bottom - playerHeight / 2;
       playerVel.y = 0;
       player.setGrounded(true);
     }
