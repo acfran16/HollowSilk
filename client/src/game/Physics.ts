@@ -85,6 +85,16 @@ export class Physics {
   private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
     const platforms = level.getPlatforms();
     
+    // Calculate enemy bounds
+    const enemyPos = enemy.getPosition();
+    const enemySize = enemy.getSize();
+    const enemyBounds = {
+      x: enemyPos.x - enemySize.width / 2,
+      y: enemyPos.y - enemySize.height / 2,
+      width: enemySize.width,
+      height: enemySize.height,
+    };
+    
     // Check ground collision for non-flying enemies
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
