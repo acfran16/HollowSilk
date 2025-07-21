@@ -119,9 +119,6 @@ export class Physics {
     const enemySize = enemy.getSize();
     const enemyVel = enemy.getVelocity();
 
-    // Store previous position
-    const prevPos = { x: enemyPos.x, y: enemyPos.y };
-
     // Apply gravity for non-flying enemies
     if (enemy.getType() !== 'flyer') {
       enemyVel.y += this.gravity * deltaTime;
