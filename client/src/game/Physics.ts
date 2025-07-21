@@ -159,7 +159,6 @@ export class Physics {
     }
     
     // World boundaries
-    const worldBounds = level.getWorldBounds();
     
     // Horizontal boundaries - reverse direction for enemies
     if (enemyPos.x - enemySize.x / 2 < worldBounds.left) {
@@ -182,7 +181,6 @@ export class Physics {
       enemy.takeDamage(1000, { x: 0, y: 0 });
     }
   }
-
   // Helper function to check collision between two rectangles
   private checkCollision(rect1: Rectangle, rect2: Rectangle): boolean {
     return (

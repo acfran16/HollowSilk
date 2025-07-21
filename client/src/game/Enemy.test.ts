@@ -58,11 +58,9 @@ describe('Physics.updateEnemyPhysics', () => {
     assert.equal(enemy.velocity.x, -10)
   })
 
- main
     const level = createLevel([], { left: 0, right: 200, top: 0, bottom: 100 })
 
     ;(physics as any).updateEnemyPhysics(0.016, enemy, level)
 
- main
   })
 })
