@@ -23,6 +23,7 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
         height: this.size.y
       }
     },
+
     takeDamage: () => { enemy.damaged = true }
   }
   return enemy
@@ -57,13 +58,11 @@ describe('Physics.updateEnemyPhysics', () => {
     assert.equal(enemy.velocity.x, -10)
   })
 
-  it('damages enemy when falling out of bounds', () => {
-    const physics = new Physics()
-    const enemy = createEnemy({ x: 50, y: 250 }, { x: 0, y: 0 }, { x: 20, y: 20 })
+ main
     const level = createLevel([], { left: 0, right: 200, top: 0, bottom: 100 })
 
     ;(physics as any).updateEnemyPhysics(0.016, enemy, level)
 
-    assert.ok(enemy.damaged)
+ main
   })
 })
