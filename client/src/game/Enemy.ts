@@ -160,14 +160,6 @@ export class Enemy {
     }
   }
 
-  getId() { return this.id; }
-  getPosition() { return { ...this.position }; }
-  getVelocity() { return { ...this.velocity }; }
-  getHealth() { return this.health; }
-  getMaxHealth() { return this.maxHealth; }
-  getType() { return this.type; }
-  getState() { return this.state; }
-  isDead() { return this.health <= 0; }
 
   private get isGrounded() { return this._isGrounded; }
 
