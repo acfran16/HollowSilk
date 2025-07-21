@@ -23,7 +23,7 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
         height: this.size.y
       }
     },
-    setGrounded: () => {},
+
     takeDamage: () => { enemy.damaged = true }
   }
   return enemy
@@ -58,14 +58,11 @@ describe('Physics.updateEnemyPhysics', () => {
     assert.equal(enemy.velocity.x, -10)
   })
 
-  it('clamps enemy position when falling out of bounds', () => {
-    const physics = new Physics()
-    const enemy = createEnemy({ x: 50, y: 350 }, { x: 0, y: 0 }, { x: 20, y: 20 })
+ main
     const level = createLevel([], { left: 0, right: 200, top: 0, bottom: 100 })
 
     ;(physics as any).updateEnemyPhysics(0.016, enemy, level)
 
-    assert.equal(enemy.position.y, 100 - enemy.size.y / 2)
-    assert.equal(enemy.velocity.y, 0)
+ main
   })
 })

@@ -115,24 +115,7 @@ export class Physics {
 
   private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
     const platforms = level.getPlatforms();
-    const enemyPos = enemy.getPosition();
-    const enemySize = enemy.getSize();
-    const enemyVel = enemy.getVelocity();
-
-    // Apply gravity for non-flying enemies
-    if (enemy.getType() !== 'flyer') {
-      enemyVel.y += this.gravity * deltaTime;
-    }
-
-    // Update position based on velocity
-    enemyPos.x += enemyVel.x * deltaTime;
-    enemyPos.y += enemyVel.y * deltaTime;
-    
-    // Calculate enemy bounds using the enemy's own data
-    const enemyBounds = enemy.getBounds();
-    
-    // Check collisions and resolve for non-flying enemies
-    let isGrounded = false;
+ main
     
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
