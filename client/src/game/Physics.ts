@@ -31,6 +31,13 @@ export class Physics {
     playerPos.x += playerVel.x * deltaTime; // Fixed: Use deltaTime here
     playerPos.y += playerVel.y * deltaTime;
     
+    // Recalculate player bounds after movement
+    const playerBounds = {
+      x: playerPos.x - playerSize.width / 2,
+      y: playerPos.y - playerSize.height / 2,
+      width: playerSize.width,
+      height: playerSize.height,
+    };
     // Check ground collision
     let isGrounded = false;
     
@@ -38,14 +45,6 @@ export class Physics {
       if (this.checkCollision(playerBounds, platform)) {
         // Recalculate player bounds after horizontal movement
         const playerBounds = {
-          x: playerPos.x - playerSize.width / 2,
-          y: playerPos.y - playerSize.height / 2,
-          width: playerSize.width,
-          height: playerSize.height,
-        };
-
-        // Check if player is falling onto platform from above
-        if (
           playerVel.y > 0 && // Falling down
           playerBounds.y + playerBounds.height > platform.y && // Bottom of player is below platform top
           playerBounds.y < platform.y + platform.height // Top of player is above platform bottom
