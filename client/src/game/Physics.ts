@@ -115,7 +115,27 @@ export class Physics {
 
   private updateEnemyPhysics(deltaTime: number, enemy: Enemy, level: Level) {
     const platforms = level.getPlatforms();
- main
+    const enemyPos = enemy.getPosition();
+    const enemySize = enemy.getSize();
+    const enemyVel = enemy.getVelocity();
+
+    // Apply gravity
+    enemyVel.y += this.gravity * deltaTime;
+
+    // Update position
+    enemyPos.x += enemyVel.x * deltaTime;
+    enemyPos.y += enemyVel.y * deltaTime;
+
+    const enemyBounds = {
+      x: enemyPos.x - enemySize.x / 2,
+      y: enemyPos.y - enemySize.y / 2,
+      width: enemySize.x,
+      height: enemySize.y,
+    };
+
+    const worldBounds = level.getWorldBounds();
+
+    let isGrounded = false;
     
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
