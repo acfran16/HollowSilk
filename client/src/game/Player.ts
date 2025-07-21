@@ -62,22 +62,8 @@ export class Player {
     // Handle input
     this.handleInput(input);
     
-    // Apply gravity
-    if (!this._isGrounded) {
-      this.velocity.y += 800 * deltaTime; // Gravity
-    }
-    
-    // Update position
-    this.position.x += this.velocity.x * deltaTime;
-    this.position.y += this.velocity.y * deltaTime;
-    
     // Update animation
     this.updateAnimation(deltaTime);
-    
-    // Apply friction
-    if (this._isGrounded && !this._isDashing) {
-      this.velocity.x *= 0.8;
-    }
   }
 
   private handleInput(input: InputManager) {
