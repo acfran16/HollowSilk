@@ -11,6 +11,7 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
     size: { ...size },
     type: 'crawler',
     damaged: false,
+    grounded: false,
     getPosition() { return this.position },
     getVelocity() { return this.velocity },
     getSize() { return this.size },
@@ -24,7 +25,8 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
       }
     },
 
-    takeDamage: () => { enemy.damaged = true }
+    takeDamage: () => { enemy.damaged = true },
+    setGrounded(value: boolean) { this.grounded = value }
   }
   return enemy
 }
@@ -58,12 +60,4 @@ describe('Physics.updateEnemyPhysics', () => {
     assert.equal(enemy.velocity.x, -10)
   })
 
-  it('test', () => {
-    const physics = new Physics()
-    const enemy = createEnemy({ x: 205, y: 50 }, { x: 10, y: 0 }, { x: 20, y: 20 })
-    const level = createLevel([], { left: 0, right: 200, top: 0, bottom: 100 })
-
-    ;(physics as any).updateEnemyPhysics(0.016, enemy, level)
-
-  })
 })
