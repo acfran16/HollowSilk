@@ -11,6 +11,7 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
     size: { ...size },
     type: 'crawler',
     damaged: false,
+    grounded: false,
     getPosition() { return this.position },
     getVelocity() { return this.velocity },
     getSize() { return this.size },
@@ -24,7 +25,8 @@ function createEnemy(position: Vector2, velocity: Vector2, size: Vector2) {
       }
     },
 
-    takeDamage: () => { enemy.damaged = true }
+    takeDamage: () => { enemy.damaged = true },
+    setGrounded(value: boolean) { this.grounded = value }
   }
   return enemy
 }
