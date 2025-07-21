@@ -61,15 +61,6 @@ export class Enemy {
 
     this.executeAIBehavior(deltaTime, playerPosition, distanceToPlayer, platforms);
 
-    if (this.type !== 'flyer') {
-      this.velocity.y += 800 * deltaTime;
-    }
-
-    const previousPosition = { ...this.position };
-    this.position.x += this.velocity.x * deltaTime;
-    this.position.y += this.velocity.y * deltaTime;
-
-    this.handlePlatformCollision(platforms, previousPosition);
     this.animationTime += deltaTime;
   }
 
@@ -169,14 +160,6 @@ export class Enemy {
     }
   }
 
-  getId() { return this.id; }
-  getPosition() { return { ...this.position }; }
-  getVelocity() { return { ...this.velocity }; }
-  getHealth() { return this.health; }
-  getMaxHealth() { return this.maxHealth; }
-  getType() { return this.type; }
-  getState() { return this.state; }
-  isDead() { return this.health <= 0; }
 
   private get isGrounded() { return this._isGrounded; }
 
@@ -187,7 +170,7 @@ export class Enemy {
 
     if (obstacleAhead || Math.abs(distanceFromStart) >= this.ai.patrolRange) {
       this.velocity.x = -this.velocity.x || this.ai.speed * (Math.random() > 0.5 ? 1 : -1);
-    } else if (this.isGrounded && Math.abs(this.velocity.x) < 1) {
+    } else if (this._isGrounded && Math.abs(this.velocity.x) < 1) {
       this.velocity.x = this.ai.speed * (Math.random() > 0.5 ? 1 : -1);
     }
 
@@ -202,7 +185,7 @@ export class Enemy {
 
     const hasObstacle = this.checkForObstacle(direction, 40, platforms);
 
-    if (hasObstacle && this.type !== 'flyer' && this.isGrounded) {
+    if (hasObstacle && this.type !== 'flyer' && this._isGrounded) {
       this.velocity.y = -300;
     }
 
@@ -277,27 +260,6 @@ export class Enemy {
     }
   }
 
-  private handlePlatformCollision(platforms: any[], previousPosition: Vector2) {
-    this._isGrounded = false;
-    if (!platforms || this.type === 'flyer') return;
-
-    for (const platform of platforms) {
-      if (typeof platform.getVertices !== 'function') continue;
-      const result = this.checkCollisionSAT(platform);
-      if (result.collided && result.mtv) {
-        this.position.x += result.mtv.x;
-        this.position.y += result.mtv.y;
-
-        if (Math.abs(result.mtv.y) > Math.abs(result.mtv.x)) {
-          this.velocity.y = 0;
-          if (result.mtv.y < 0) this._isGrounded = true;
-        } else {
-          this.velocity.x = 0;
-        }
-      }
-    }
-  }
-
   private getVertices(): Vector2[] {
     const hw = this.size.x / 2, hh = this.size.y / 2;
     const x = this.position.x, y = this.position.y;
@@ -309,9 +271,8 @@ export class Enemy {
     ];
   }
 
-  private get isGrounded(): boolean {
-    // Simple ground check - will be enhanced with proper collision detection
-    return this.velocity.y === 0;
+  setGrounded(grounded: boolean) {
+    this._isGrounded = grounded;
   }
 
   // Getters
