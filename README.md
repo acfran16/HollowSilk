@@ -11,4 +11,3 @@ The scripts rely on tools such as `concurrently` from `node_modules`, so running
 `npm install` ensures they are available.
 
 
-On Replit, be sure to run `npm install` first so TypeScript can find all modules.

@@ -35,39 +35,27 @@ export class Physics {
     playerPos.x += playerVel.x * deltaTime;
     playerPos.y += playerVel.y * deltaTime;
     
-    // Calculate player bounds after movement
-    const playerBounds = {
-      x: playerPos.x - playerSize.x / 2,
-      y: playerPos.y - playerSize.y / 2,
-      width: playerSize.x,
-      height: playerSize.y,
-    };
-    
-    // Check collisions and resolve
+    // Check ground collision
     let isGrounded = false;
     
     platforms.forEach(platform => {
       if (this.checkCollision(playerBounds, platform)) {
-        // Determine collision side based on previous position
-        const prevBounds = {
-          x: prevPos.x - playerSize.x / 2,
-          y: prevPos.y - playerSize.y / 2,
-          width: playerSize.x,
-          height: playerSize.y,
+        // Recalculate player bounds after horizontal movement
+        const playerBounds = {
+          x: playerPos.x - playerSize.width / 2,
+          y: playerPos.y - playerSize.height / 2,
+          width: playerSize.width,
+          height: playerSize.height,
         };
 
-        // Calculate overlaps
-        const overlapLeft = (playerBounds.x + playerBounds.width) - platform.x;
-        const overlapRight = (platform.x + platform.width) - playerBounds.x;
-        const overlapTop = (playerBounds.y + playerBounds.height) - platform.y;
-        const overlapBottom = (platform.y + platform.height) - playerBounds.y;
-
-        // Find minimum overlap to determine collision side
-        const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-
-        if (minOverlap === overlapTop && playerVel.y > 0) {
-          // Collision from top (player falling onto platform)
-          playerPos.y = platform.y - playerSize.y / 2;
+        // Check if player is falling onto platform from above
+        if (
+          playerVel.y > 0 && // Falling down
+          playerBounds.y + playerBounds.height > platform.y && // Bottom of player is below platform top
+          playerBounds.y < platform.y + platform.height // Top of player is above platform bottom
+        ) {
+          // Snap player to top of platform
+          playerPos.y = platform.y - playerSize.height / 2;
           playerVel.y = 0;
           isGrounded = true;
         } else if (minOverlap === overlapBottom && playerVel.y < 0) {
