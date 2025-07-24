@@ -40,10 +40,6 @@ export class Physics {
     
     platforms.forEach(platform => {
       const playerBounds = {
-        x: playerPos.x - playerSize.x / 2,
-        y: playerPos.y - playerSize.y / 2,
-        width: playerSize.x,
-        height: playerSize.y,
       };
 
       if (this.checkCollision(playerBounds, platform)) {
