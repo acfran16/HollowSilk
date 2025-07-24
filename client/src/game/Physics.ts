@@ -39,6 +39,13 @@ export class Physics {
     let isGrounded = false;
     
     platforms.forEach(platform => {
+      const playerBounds = {
+        x: playerPos.x - playerSize.width / 2,
+        y: playerPos.y - playerSize.height / 2,
+        width: playerSize.width,
+        height: playerSize.height,
+      };
+
       if (this.checkCollision(playerBounds, platform)) {
         // Recalculate player bounds after horizontal movement
         const playerBounds = {
