@@ -39,35 +39,31 @@ export class Physics {
     let isGrounded = false;
     
     platforms.forEach(platform => {
-      if (this.checkCollision(playerBounds, platform)) {
-        // Recalculate player bounds after horizontal movement
-        const playerBounds = {
-          x: playerPos.x - playerSize.width / 2,
-          y: playerPos.y - playerSize.height / 2,
-          width: playerSize.width,
-          height: playerSize.height,
-        };
+      const playerBounds = player.getBounds();
 
-        // Check if player is falling onto platform from above
-        if (
-          playerVel.y > 0 && // Falling down
-          playerBounds.y + playerBounds.height > platform.y && // Bottom of player is below platform top
-          playerBounds.y < platform.y + platform.height // Top of player is above platform bottom
-        ) {
-          // Snap player to top of platform
-          playerPos.y = platform.y - playerSize.height / 2;
+      if (this.checkCollision(playerBounds, platform)) {
+        const overlapLeft = (playerBounds.x + playerBounds.width) - platform.x;
+        const overlapRight = (platform.x + platform.width) - playerBounds.x;
+        const overlapTop = (playerBounds.y + playerBounds.height) - platform.y;
+        const overlapBottom = (platform.y + platform.height) - playerBounds.y;
+
+        const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+        if (minOverlap === overlapTop && playerVel.y > 0) {
+          // Landing on top of the platform
+          playerPos.y = platform.y - playerSize.y / 2;
           playerVel.y = 0;
           isGrounded = true;
         } else if (minOverlap === overlapBottom && playerVel.y < 0) {
-          // Collision from bottom (player hitting platform from below)
+          // Hitting the platform from below
           playerPos.y = platform.y + platform.height + playerSize.y / 2;
           playerVel.y = 0;
         } else if (minOverlap === overlapLeft && playerVel.x > 0) {
-          // Collision from left
+          // Colliding from the left
           playerPos.x = platform.x - playerSize.x / 2;
           playerVel.x = 0;
         } else if (minOverlap === overlapRight && playerVel.x < 0) {
-          // Collision from right
+          // Colliding from the right
           playerPos.x = platform.x + platform.width + playerSize.x / 2;
           playerVel.x = 0;
         }
@@ -114,12 +110,7 @@ export class Physics {
     enemyPos.x += enemyVel.x * deltaTime;
     enemyPos.y += enemyVel.y * deltaTime;
 
-    const enemyBounds = {
-      x: enemyPos.x - enemySize.x / 2,
-      y: enemyPos.y - enemySize.y / 2,
-      width: enemySize.x,
-      height: enemySize.y,
-    };
+    const enemyBounds = enemy.getBounds();
 
     const worldBounds = level.getWorldBounds();
 
