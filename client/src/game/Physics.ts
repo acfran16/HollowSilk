@@ -39,7 +39,6 @@ export class Physics {
     let isGrounded = false;
     
     platforms.forEach(platform => {
-      const playerBounds = player.getBounds();
 
       if (this.checkCollision(playerBounds, platform)) {
         const overlapLeft = (playerBounds.x + playerBounds.width) - platform.x;
