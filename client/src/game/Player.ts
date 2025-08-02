@@ -17,6 +17,19 @@ export class Player {
   private maxDashCooldown: number = 1.0;
   private maxDashDuration: number = 0.2;
   
+  // Input state for physics to use
+  private inputState: {
+    moveLeft: boolean;
+    moveRight: boolean;
+    jump: boolean;
+    dash: boolean;
+  } = {
+    moveLeft: false,
+    moveRight: false,
+    jump: false,
+    dash: false,
+  };
+  
   // Combat properties
   private attackDamage: number = 25;
   private attackRange: number = 60;
@@ -67,42 +80,33 @@ export class Player {
   }
 
   private handleInput(input: InputManager) {
-    const moveSpeed = this._isDashing ? this.dashForce : this.speed;
+    // Update input state for physics to use
+    this.inputState.moveLeft = input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft');
+    this.inputState.moveRight = input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight');
+    this.inputState.jump = input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp');
     
-    // Horizontal movement (side-scrolling focus)
+    // Update facing direction and animation based on input
     if (input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft')) {
-      this.velocity.x = -moveSpeed;
       this.facingDirection = -1;
       this.currentAnimation = this._isGrounded ? 'run' : 'jump';
     } else if (input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) {
-      this.velocity.x = moveSpeed;
       this.facingDirection = 1;
       this.currentAnimation = this._isGrounded ? 'run' : 'jump';
-    } else if (!(input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft') || input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) && !this._isDashing) {
+    } else if (!this.inputState.moveLeft && !this.inputState.moveRight && !this._isDashing) {
       this.currentAnimation = 'idle';
- if (Math.abs(this.velocity.x) < 10) { this.velocity.x = 0; }
     }
-    
-    // Vertical movement for flying
-    if ((input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp')) && this._isGrounded) {
-      this.velocity.y = -this.jumpForce;
-      this._isGrounded = false; // Player is no longer grounded after jumping
-    }
-
-    // Reset vertical velocity if not grounded and not affected by external forces (like knockback)
-    // This line is commented out to allow gravity to affect the player when not grounded.
-    // if (!this._isGrounded && !this._isDashing && Math.abs(this.velocity.y) < 10) { this.velocity.y = 0; }
     
     // Dash (only horizontal for side-scrolling)
     if (
       (input.isKeyJustPressed('ShiftLeft') || input.isKeyJustPressed('ShiftRight')) &&
       this.dashCooldown <= 0
     ) {
+      this.inputState.dash = true;
       this.dashDuration = this.maxDashDuration;
       this.dashCooldown = this.maxDashCooldown;
       this.currentAnimation = 'dash';
-      // Apply horizontal dash boost
-      this.velocity.x = this.facingDirection * this.dashForce;
+    } else {
+      this.inputState.dash = false;
     }
     
     // Attack
@@ -256,4 +260,8 @@ export class Player {
   isDashing(): boolean { return this._isDashing; }
   isAttacking(): boolean { return this._isAttacking; }
   getFacingDirection(): number { return this.facingDirection; }
+  getInputState() { return this.inputState; }
+  getSpeed(): number { return this.speed; }
+  getJumpForce(): number { return this.jumpForce; }
+  getDashForce(): number { return this.dashForce; }
 }
