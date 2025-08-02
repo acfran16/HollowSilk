@@ -9,8 +9,8 @@ export class Player {
   private size: Vector2;
   
   // Movement properties
-  private speed: number = 200;
-  private jumpForce: number = 400;
+  private speed: number = 250; // Slightly increased for a more realistic run speed
+  private jumpForce: number = 500; // Increased for a more natural jump height
   private dashForce: number = 500;
   private dashCooldown: number = 0;
   private dashDuration: number = 0;
@@ -85,6 +85,7 @@ export class Player {
     
     // Vertical movement for flying
     if ((input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp')) && this._isGrounded) {
+ console.log("Jump condition met!");
       this.velocity.y = -this.jumpForce;
       this._isGrounded = false; // Player is no longer grounded after jumping
     }
@@ -92,6 +93,7 @@ export class Player {
     // Reset vertical velocity if not grounded and not affected by external forces (like knockback)
     // This line is commented out to allow gravity to affect the player when not grounded.
     // if (!this._isGrounded && !this._isDashing && Math.abs(this.velocity.y) < 10) { this.velocity.y = 0; }
+ console.log('isGrounded before jump check:', this._isGrounded);
     
     // Dash (only horizontal for side-scrolling)
     if (

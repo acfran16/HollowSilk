@@ -4,8 +4,8 @@ import { Level } from "./Level";
 import { Rectangle } from "./types";
 
 export class Physics {
-  private gravity: number = 800;
-  private friction: number = 0.8;
+  private gravity: number = 980; // Realistic gravity (pixels/s^2), adjust based on your game's scale
+  private friction: number = 0.8; // Realistic friction (0 to 1), adjust based on desired surface feel
 
   update(deltaTime: number, player: Player, enemies: Enemy[], level: Level) {
     // Update player physics
