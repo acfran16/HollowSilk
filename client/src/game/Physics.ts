@@ -22,9 +22,33 @@ export class Physics {
     const playerPos = player.getPosition();
     const playerSize = player.getSize();
     const playerVel = player.getVelocity();
+    const inputState = player.getInputState();
 
     // Store previous position
     const prevPos = { x: playerPos.x, y: playerPos.y };
+
+    // Handle input-based movement
+    const moveSpeed = player.isDashing() ? player.getDashForce() : player.getSpeed();
+    
+    if (inputState.moveLeft && !inputState.moveRight) {
+      playerVel.x = -moveSpeed;
+    } else if (inputState.moveRight && !inputState.moveLeft) {
+      playerVel.x = moveSpeed;
+    } else if (!player.isDashing()) {
+      // Stop immediately when no input (unless dashing)
+      playerVel.x = 0;
+    }
+    
+    // Handle jumping
+    if (inputState.jump && player.isGrounded()) {
+      playerVel.y = -player.getJumpForce();
+      player.setGrounded(false);
+    }
+    
+    // Handle dashing
+    if (inputState.dash && player.isDashing()) {
+      playerVel.x = player.getFacingDirection() * player.getDashForce();
+    }
 
     // Apply gravity only when not grounded
     if (!player.isGrounded()) {
@@ -78,10 +102,7 @@ export class Physics {
     
     player.setGrounded(isGrounded);
     
-    // Apply friction when grounded and not dashing
-    if (isGrounded && !player.isDashing()) {
-      playerVel.x *= this.friction;
-    }
+    // Note: Removed friction application since we now handle stopping via input
     
     // World boundaries
     const worldBounds = level.getWorldBounds();
