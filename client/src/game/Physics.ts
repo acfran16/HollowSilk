@@ -6,6 +6,7 @@ import { Rectangle } from "./types";
 export class Physics {
   private gravity: number = 980; // Realistic gravity (pixels/s^2), adjust based on your game's scale
   private friction: number = 0.8; // Realistic friction (0 to 1), adjust based on desired surface feel
+  private wallSlideThreshold: number = 50; // Minimum speed to start wall sliding
 
   update(deltaTime: number, player: Player, enemies: Enemy[], level: Level) {
     // Update player physics
@@ -39,10 +40,19 @@ export class Physics {
       playerVel.x = 0;
     }
     
-    // Handle jumping
-    if (inputState.jump && player.isGrounded()) {
+    // Handle jumping with coyote time and wall jumping
+    if (inputState.jump && (player.isGrounded() || player.getCoyoteTimer() > 0 || player.isWallSliding())) {
+      if (player.isWallSliding()) {
+        // Wall jump
+        const wallJumpForce = player.getWallJumpForce();
+        playerVel.x = player.getFacingDirection() === 1 ? -wallJumpForce.x : wallJumpForce.x;
+        playerVel.y = -wallJumpForce.y;
+      } else {
+        // Normal jump
       playerVel.y = -player.getJumpForce();
+      }
       player.setGrounded(false);
+      player.setWallSliding(false);
     }
     
     // Handle dashing
@@ -61,6 +71,7 @@ export class Physics {
     
     // Check ground collision
     let isGrounded = false;
+    let isWallSliding = false;
 
           // Define playerBounds before use
           const playerBounds = {
@@ -91,16 +102,29 @@ export class Physics {
         } else if (minOverlap === overlapLeft && playerVel.x > 0) {
           // Colliding from the left
           playerPos.x = platform.x - playerSize.x / 2;
-          playerVel.x = 0;
+          // Check for wall sliding
+          if (!isGrounded && playerVel.y > this.wallSlideThreshold && (inputState.moveRight)) {
+            isWallSliding = true;
+            playerVel.y = Math.min(playerVel.y, 100); // Limit wall slide speed
+          } else {
+            playerVel.x = 0;
+          }
         } else if (minOverlap === overlapRight && playerVel.x < 0) {
           // Colliding from the right
           playerPos.x = platform.x + platform.width + playerSize.x / 2;
-          playerVel.x = 0;
+          // Check for wall sliding
+          if (!isGrounded && playerVel.y > this.wallSlideThreshold && (inputState.moveLeft)) {
+            isWallSliding = true;
+            playerVel.y = Math.min(playerVel.y, 100); // Limit wall slide speed
+          } else {
+            playerVel.x = 0;
+          }
         }
       }
     });
     
     player.setGrounded(isGrounded);
+    player.setWallSliding(isWallSliding);
     
     // Note: Removed friction application since we now handle stopping via input
     

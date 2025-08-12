@@ -6,6 +6,10 @@ export class Player {
   private velocity: Vector2;
   private health: number;
   private maxHealth: number;
+  private energy: number;
+  private maxEnergy: number;
+  private experience: number;
+  private level: number;
   private size: Vector2;
   
   // Movement properties
@@ -16,6 +20,12 @@ export class Player {
   private dashDuration: number = 0;
   private maxDashCooldown: number = 1.0;
   private maxDashDuration: number = 0.2;
+  private wallSlideSpeed: number = 100;
+  private wallJumpForce: Vector2 = { x: 300, y: 450 };
+  private coyoteTime: number = 0.15;
+  private coyoteTimer: number = 0;
+  private jumpBufferTime: number = 0.1;
+  private jumpBufferTimer: number = 0;
   
   // Input state for physics to use
   private inputState: {
@@ -38,12 +48,19 @@ export class Player {
   private comboCount: number = 0;
   private comboTimer: number = 0;
   private maxComboTimer: number = 2.0;
+  private maxComboCount: number = 5;
+  private comboMultiplier: number = 1.0;
   
   // State flags
   private _isGrounded: boolean = false;
   private _isDashing: boolean = false;
   private _isAttacking: boolean = false;
+  private _invulnerable: boolean = false;
+  private _wallSliding: boolean = false;
+  private invulnerabilityTimer: number = 0;
+  private maxInvulnerabilityTime: number = 1.0;
   private facingDirection: number = 1; // 1 for right, -1 for left
+  private wasGrounded: boolean = false;
   
   // Animation
   private currentAnimation: string = 'idle';
@@ -54,6 +71,10 @@ export class Player {
     this.velocity = { x: 0, y: 0 };
     this.health = 100;
     this.maxHealth = 100;
+    this.energy = 100;
+    this.maxEnergy = 100;
+    this.experience = 0;
+    this.level = 1;
     this.size = { x: 32, y: 48 };
   }
 
@@ -63,10 +84,28 @@ export class Player {
     this.dashDuration = Math.max(0, this.dashDuration - deltaTime);
     this.attackCooldown = Math.max(0, this.attackCooldown - deltaTime);
     this.comboTimer = Math.max(0, this.comboTimer - deltaTime);
+    this.invulnerabilityTimer = Math.max(0, this.invulnerabilityTimer - deltaTime);
+    this.coyoteTimer = Math.max(0, this.coyoteTimer - deltaTime);
+    this.jumpBufferTimer = Math.max(0, this.jumpBufferTimer - deltaTime);
+    
+    // Update invulnerability
+    this._invulnerable = this.invulnerabilityTimer > 0;
+    
+    // Regenerate energy
+    if (this.energy < this.maxEnergy) {
+      this.energy = Math.min(this.maxEnergy, this.energy + 30 * deltaTime);
+    }
+    
+    // Coyote time - allow jumping shortly after leaving ground
+    if (this.wasGrounded && !this._isGrounded) {
+      this.coyoteTimer = this.coyoteTime;
+    }
+    this.wasGrounded = this._isGrounded;
     
     // Reset combo if timer expires
     if (this.comboTimer <= 0) {
       this.comboCount = 0;
+      this.comboMultiplier = 1.0;
     }
     
     // Update dash state
@@ -83,17 +122,22 @@ export class Player {
     // Update input state for physics to use
     this.inputState.moveLeft = input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft');
     this.inputState.moveRight = input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight');
-    this.inputState.jump = input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp');
+    
+    // Jump buffering - store jump input for a short time
+    if (input.isKeyJustPressed('Space') || input.isKeyJustPressed('KeyW') || input.isKeyJustPressed('ArrowUp')) {
+      this.jumpBufferTimer = this.jumpBufferTime;
+    }
+    this.inputState.jump = this.jumpBufferTimer > 0;
     
     // Update facing direction and animation based on input
-    if (input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft')) {
+    if (this.inputState.moveLeft && !this.inputState.moveRight) {
       this.facingDirection = -1;
-      this.currentAnimation = this._isGrounded ? 'run' : 'jump';
-    } else if (input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight')) {
+      this.currentAnimation = this._isGrounded ? 'run' : (this._wallSliding ? 'wall_slide' : 'jump');
+    } else if (this.inputState.moveRight && !this.inputState.moveLeft) {
       this.facingDirection = 1;
-      this.currentAnimation = this._isGrounded ? 'run' : 'jump';
+      this.currentAnimation = this._isGrounded ? 'run' : (this._wallSliding ? 'wall_slide' : 'jump');
     } else if (!this.inputState.moveLeft && !this.inputState.moveRight && !this._isDashing) {
-      this.currentAnimation = 'idle';
+      this.currentAnimation = this._wallSliding ? 'wall_slide' : 'idle';
  if (Math.abs(this.velocity.x) < 10) { this.velocity.x = 0; }
     }
     
@@ -107,26 +151,29 @@ export class Player {
     // This line is commented out to allow gravity to affect the player when not grounded.
     // if (!this._isGrounded && !this._isDashing && Math.abs(this.velocity.y) < 10) { this.velocity.y = 0; }
     
-    // Dash (only horizontal for side-scrolling)
+    // Dash - costs energy
     if (
       (input.isKeyJustPressed('ShiftLeft') || input.isKeyJustPressed('ShiftRight')) &&
-      this.dashCooldown <= 0
+      this.dashCooldown <= 0 && this.energy >= 25
     ) {
       this.inputState.dash = true;
       this.dashDuration = this.maxDashDuration;
       this.dashCooldown = this.maxDashCooldown;
+      this.energy -= 25;
       this.currentAnimation = 'dash';
+      // Brief invulnerability during dash
+      this.invulnerabilityTimer = this.maxDashDuration;
     } else {
       this.inputState.dash = false;
     }
     
     // Attack
-    if ((input.isKeyJustPressed('KeyJ') || input.isKeyJustPressed('KeyX')) && this.attackCooldown <= 0) {
+    if ((input.isKeyJustPressed('KeyJ') || input.isKeyJustPressed('KeyX')) && this.attackCooldown <= 0 && this.energy >= 10) {
       this.performAttack();
     }
     
     // Special attack
-    if ((input.isKeyJustPressed('KeyK') || input.isKeyJustPressed('KeyZ')) && this.attackCooldown <= 0 && this.comboCount >= 3) {
+    if ((input.isKeyJustPressed('KeyK') || input.isKeyJustPressed('KeyZ')) && this.attackCooldown <= 0 && this.comboCount >= 3 && this.energy >= 30) {
       this.performSpecialAttack();
     }
   }
@@ -134,11 +181,13 @@ export class Player {
   private performAttack() {
     this._isAttacking = true;
     this.attackCooldown = this.maxAttackCooldown;
+    this.energy -= 10;
     this.currentAnimation = 'attack';
     
     // Increment combo
-    this.comboCount++;
+    this.comboCount = Math.min(this.maxComboCount, this.comboCount + 1);
     this.comboTimer = this.maxComboTimer;
+    this.comboMultiplier = 1.0 + (this.comboCount - 1) * 0.2;
     
     // Reset attack animation after a short delay
     setTimeout(() => {
@@ -149,16 +198,37 @@ export class Player {
   private performSpecialAttack() {
     this._isAttacking = true;
     this.attackCooldown = this.maxAttackCooldown * 1.5;
+    this.energy -= 30;
     this.currentAnimation = 'special_attack';
     
     // Special attacks reset combo but deal more damage
     this.comboCount = 0;
+    this.comboMultiplier = 1.0;
     
     setTimeout(() => {
       this._isAttacking = false;
     }, 400);
   }
 
+  addExperience(amount: number) {
+    this.experience += amount;
+    const expNeeded = this.level * 100;
+    if (this.experience >= expNeeded) {
+      this.levelUp();
+    }
+  }
+
+  private levelUp() {
+    this.level++;
+    this.experience = 0;
+    
+    // Increase stats on level up
+    this.maxHealth += 20;
+    this.health = this.maxHealth; // Full heal on level up
+    this.maxEnergy += 10;
+    this.energy = this.maxEnergy;
+    this.attackDamage += 5;
+  }
   private updateAnimation(deltaTime: number) {
     this.animationTime += deltaTime;
   }
@@ -174,7 +244,17 @@ export class Player {
       ctx.scale(-1, 1);
     }
 
-    ctx.fillStyle = this._isDashing ? '#4488ff' : (this._isAttacking ? '#ff4444' : '#44ff44');
+    // Invulnerability flashing effect
+    if (this._invulnerable && Math.floor(this.animationTime * 10) % 2 === 0) {
+      ctx.globalAlpha = 0.5;
+    }
+    
+    let playerColor = '#44ff44'; // Default green
+    if (this._isDashing) playerColor = '#4488ff'; // Blue when dashing
+    else if (this._isAttacking) playerColor = '#ff4444'; // Red when attacking
+    else if (this._wallSliding) playerColor = '#ffaa44'; // Orange when wall sliding
+    
+    ctx.fillStyle = playerColor;
     ctx.fillRect(
       this.position.x - this.size.x / 2,
       this.position.y - this.size.y / 2,
@@ -183,32 +263,9 @@ export class Player {
     );
 
     // Draw player rectangle (placeholder for sprite) centered at the origin after translation
-    ctx.fillStyle = this._isDashing ? '#4488ff' : (this._isAttacking ? '#ff4444' : '#44ff44');
+    ctx.fillStyle = playerColor;
     ctx.fillRect(-this.size.x / 2, -this.size.y / 2, this.size.x, this.size.y);
 
-    // Commented out health bar rendering
-    /*
-        // Draw health bar above player
-        const healthBarWidth = 40;
-        const healthBarHeight = 4;
-        const healthPercentage = this.health / this.maxHealth;
-
-        ctx.fillStyle = '#333';
-        ctx.fillRect(
-          this.position.x - healthBarWidth / 2,
-          this.position.y - this.size.y / 2 - 10,
-          healthBarWidth,
-          healthBarHeight
-        );
-
-        ctx.fillStyle = healthPercentage > 0.5 ? '#44ff44' : (healthPercentage > 0.25 ? '#ffff44' : '#ff4444');
-        ctx.fillRect(
-          this.position.x - healthBarWidth / 2,
-          this.position.y - this.size.y / 2 - 10,
-          healthBarWidth * healthPercentage,
-          healthBarHeight
-        );
-    */
     ctx.restore();
 
     // Draw attack hitbox when attacking
@@ -221,7 +278,8 @@ export class Player {
   }
 
   getAttackHitBox(): HitBox {
-    const damage = this.comboCount >= 3 && this.currentAnimation === 'special_attack' ? this.attackDamage * 2 : this.attackDamage;
+    const baseDamage = this.comboCount >= 3 && this.currentAnimation === 'special_attack' ? this.attackDamage * 2 : this.attackDamage;
+    const damage = Math.floor(baseDamage * this.comboMultiplier);
     const range = this.comboCount >= 3 && this.currentAnimation === 'special_attack' ? this.attackRange * 1.5 : this.attackRange;
     
     return {
@@ -230,22 +288,40 @@ export class Player {
       width: range,
       height: this.size.y,
       damage: damage,
-      knockback: { x: this.facingDirection * 150, y: -50 }
+      knockback: { x: this.facingDirection * 150, y: -50 },
+      type: this.currentAnimation === 'special_attack' ? 'magic' : 'slash'
     };
   }
 
   takeDamage(damage: number, knockback: Vector2) {
+    if (this._invulnerable) return;
+    
     this.health = Math.max(0, this.health - damage);
     this.velocity.x += knockback.x;
     this.velocity.y += knockback.y;
+    
+    // Become invulnerable after taking damage
+    this.invulnerabilityTimer = this.maxInvulnerabilityTime;
+    
+    // Reset combo on taking damage
+    this.comboCount = 0;
+    this.comboMultiplier = 1.0;
   }
 
   heal(amount: number) {
     this.health = Math.min(this.maxHealth, this.health + amount);
   }
+  
+  restoreEnergy(amount: number) {
+    this.energy = Math.min(this.maxEnergy, this.energy + amount);
+  }
 
   setGrounded(grounded: boolean) {
     this._isGrounded = grounded;
+  }
+  
+  setWallSliding(wallSliding: boolean) {
+    this._wallSliding = wallSliding;
   }
 
   getBounds() {
@@ -266,13 +342,23 @@ export class Player {
   getVelocity(): Vector2 { return this.velocity; }
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
+  getEnergy(): number { return this.energy; }
+  getMaxEnergy(): number { return this.maxEnergy; }
+  getExperience(): number { return this.experience; }
+  getLevel(): number { return this.level; }
   getComboCount(): number { return this.comboCount; }
+  getComboMultiplier(): number { return this.comboMultiplier; }
   isGrounded(): boolean { return this._isGrounded; }
   isDashing(): boolean { return this._isDashing; }
   isAttacking(): boolean { return this._isAttacking; }
+  isInvulnerable(): boolean { return this._invulnerable; }
+  isWallSliding(): boolean { return this._wallSliding; }
   getFacingDirection(): number { return this.facingDirection; }
   getInputState() { return this.inputState; }
   getSpeed(): number { return this.speed; }
   getJumpForce(): number { return this.jumpForce; }
   getDashForce(): number { return this.dashForce; }
+  getCoyoteTimer(): number { return this.coyoteTimer; }
+  getJumpBufferTimer(): number { return this.jumpBufferTimer; }
+  getWallJumpForce(): Vector2 { return this.wallJumpForce; }
 }

@@ -17,13 +17,19 @@ export interface GameState {
   player: {
     health: number;
     maxHealth: number;
+    energy: number;
+    maxEnergy: number;
     comboCount: number;
+    experience: number;
+    level: number;
     position: Vector2;
     velocity: Vector2;
     isGrounded: boolean;
     isDashing: boolean;
     isAttacking: boolean;
     facingDirection: number;
+    invulnerable: boolean;
+    wallSliding: boolean;
   };
   enemies: Array<{
     id: string;
@@ -40,8 +46,17 @@ export interface GameState {
     shakeX: number;
     shakeY: number;
   };
+  collectibles: Array<{
+    id: string;
+    type: 'health' | 'energy' | 'experience';
+    position: Vector2;
+    collected: boolean;
+  }>;
+  score: number;
+  timeElapsed: number;
   isPaused: boolean;
   isGameOver: boolean;
+  currentLevel: string;
 }
 
 export interface Particle {
@@ -55,6 +70,7 @@ export interface Particle {
   color: string;
   size: number;
   gravity: number;
+  type?: 'spark' | 'smoke' | 'magic' | 'blood';
 }
 
 export interface AnimationFrame {
@@ -78,6 +94,7 @@ export interface HitBox {
   height: number;
   damage: number;
   knockback: Vector2;
+  type?: 'slash' | 'magic' | 'projectile';
 }
 
 export interface EnemyAI {
@@ -88,4 +105,7 @@ export interface EnemyAI {
   speed: number;
   attackCooldown: number;
   lastAttackTime: number;
+  aggroLevel: number;
+  lastKnownPlayerPosition?: Vector2;
+}
 }
