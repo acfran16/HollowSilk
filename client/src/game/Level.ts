@@ -12,7 +12,15 @@ export class Level {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.worldBounds = this.calculateWorldBounds();
-    this.loadLevelFromLayout(levelLayouts[levelName]);
+    const layout = levelLayouts[levelName] || levelLayouts["tutorial"];
+    this.loadLevelFromLayout(layout.platforms);
+    this.spawnPoint = layout.spawnPoint;
+  }
+
+  private spawnPoint: Vector2 = { x: 50, y: 600 };
+
+  getSpawnPoint(): Vector2 {
+    return this.spawnPoint;
   }
 
   private calculateWorldBounds() {

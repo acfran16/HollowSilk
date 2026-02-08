@@ -212,6 +212,12 @@ export class GameEngine {
       this.triggerGameOver();
     }
 
+    // Check level transition
+    // Check if player is on a goal platform
+    if (this.level && this.level.isPointOnGoal(this.player.getPosition())) {
+      this.transitionLevel();
+    }
+
     // Notify state updates
     this.notifyStateUpdate();
 
@@ -391,9 +397,11 @@ export class GameEngine {
 
   restartGame() {
     // Reset player
-    // Reset player to the beginning of the level on the main ground platform
+    // Reset player
+    // Reset player to the beginning of the level or spawn point
     if (this.level) {
-      this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
+      const spawn = this.level.getSpawnPoint();
+      this.player = new Player({ x: spawn.x, y: spawn.y });
     } else {
       this.player = new Player({ x: 0, y: 0 }); // Fallback position
     }
@@ -417,5 +425,31 @@ export class GameEngine {
 
     // Reset combat
     this.combat.reset();
+  }
+
+  private transitionLevel() {
+    // Simple transition for now: switch level and reset
+    const nextLevel = this.currentLevel === "tutorial" ? "caverns" : "tutorial";
+    this.currentLevel = nextLevel;
+
+    // Initialize new level
+    this.level = new Level(this.canvas!.width, this.canvas!.height, this.currentLevel);
+
+    // Move player to new spawn point
+    const spawn = this.level.getSpawnPoint();
+    this.player.setPosition(spawn);
+
+    // Reset enemies and collectibles for the new level
+    // Ideally we should load these from level data too, but for now we'll re-init default or random
+    // For "caverns", we might want different enemies. 
+    // TODO: Load enemies from level data
+    this.initializeEnemies();
+    this.initializeCollectibles();
+
+    // Reset camera
+    this.camera = new Camera(this.level.getWorldBounds().bottom - 250);
+
+    // Optional: Flash screen or particle effect
+    this.soundManager.playSound('success'); // Placeholder for level finish sound
   }
 }

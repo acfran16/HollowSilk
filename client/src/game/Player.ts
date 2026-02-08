@@ -3,6 +3,7 @@ import { InputManager } from "./InputManager";
 import { ParticleSystem } from "./ParticleSystem";
 
 export class Player {
+  private id: string;
   private position: Vector2;
   private velocity: Vector2;
   private health: number;
@@ -69,6 +70,7 @@ export class Player {
   private animationTime: number = 0;
 
   constructor(startPosition: Vector2) {
+    this.id = 'player';
     this.position = { ...startPosition };
     this.velocity = { x: 0, y: 0 };
     this.health = 100;
@@ -114,13 +116,13 @@ export class Player {
     this._isDashing = this.dashDuration > 0;
 
     // Handle input
-    this.handleInput(input);
+    this.handleInput(input, particleSystem);
 
     // Update animation
     this.updateAnimation(deltaTime);
   }
 
-  private handleInput(input: InputManager) {
+  private handleInput(input: InputManager, particleSystem?: ParticleSystem) {
     // Update input state for physics to use
     this.inputState.moveLeft = input.isKeyPressed('KeyA') || input.isKeyPressed('ArrowLeft');
     this.inputState.moveRight = input.isKeyPressed('KeyD') || input.isKeyPressed('ArrowRight');
@@ -355,8 +357,10 @@ export class Player {
   }
 
   // Getters
-  getPosition(): Vector2 { return this.position; }
-  getVelocity(): Vector2 { return this.velocity; }
+  getId(): string { return this.id; }
+  getPosition(): Vector2 { return { ...this.position }; }
+  setPosition(pos: Vector2) { this.position = { ...pos }; }
+  getVelocity(): Vector2 { return { ...this.velocity }; }
   getHealth(): number { return this.health; }
   getMaxHealth(): number { return this.maxHealth; }
   getEnergy(): number { return this.energy; }
