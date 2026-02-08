@@ -2,15 +2,16 @@ import { Player } from "./Player";
 import { Enemy } from "./Enemy";
 import { Level } from "./Level";
 import { Rectangle } from "./types";
+import { ParticleSystem } from "./ParticleSystem";
 
 export class Physics {
   private gravity: number = 980; // Realistic gravity (pixels/s^2), adjust based on your game's scale
   private friction: number = 0.8; // Realistic friction (0 to 1), adjust based on desired surface feel
   private wallSlideThreshold: number = 50; // Minimum speed to start wall sliding
 
-  update(deltaTime: number, player: Player, enemies: Enemy[], level: Level) {
+  update(deltaTime: number, player: Player, enemies: Enemy[], level: Level, particleSystem?: ParticleSystem) {
     // Update player physics
-    this.updatePlayerPhysics(deltaTime, player, level);
+    this.updatePlayerPhysics(deltaTime, player, level, particleSystem);
 
     // Update enemy physics
     enemies.forEach(enemy => {
@@ -18,7 +19,7 @@ export class Physics {
     });
   }
 
-  private updatePlayerPhysics(deltaTime: number, player: Player, level: Level) {
+  private updatePlayerPhysics(deltaTime: number, player: Player, level: Level, particleSystem?: ParticleSystem) {
     const platforms = level.getPlatforms();
     const playerPos = player.getPosition();
     const playerSize = player.getSize();
@@ -30,7 +31,7 @@ export class Physics {
 
     // Handle input-based movement
     const moveSpeed = player.isDashing() ? player.getDashForce() : player.getSpeed();
-    
+
     if (inputState.moveLeft && !inputState.moveRight) {
       playerVel.x = -moveSpeed;
     } else if (inputState.moveRight && !inputState.moveLeft) {
@@ -39,7 +40,7 @@ export class Physics {
       // Stop immediately when no input (unless dashing)
       playerVel.x = 0;
     }
-    
+
     // Handle jumping with coyote time and wall jumping
     if (inputState.jump && (player.isGrounded() || player.getCoyoteTimer() > 0 || player.isWallSliding())) {
       if (player.isWallSliding()) {
@@ -49,12 +50,26 @@ export class Physics {
         playerVel.y = -wallJumpForce.y;
       } else {
         // Normal jump
-      playerVel.y = -player.getJumpForce();
+        playerVel.y = -player.getJumpForce();
       }
       player.setGrounded(false);
       player.setWallSliding(false);
+
+      // Jump particles
+      if (particleSystem) {
+        particleSystem.createJumpEffect(playerPos.x, playerPos.y + playerSize.y / 2);
+      }
+    } else if (inputState.jump && player.canDoubleJump()) {
+      // Double jump
+      playerVel.y = -player.getJumpForce();
+      player.setCanDoubleJump(false);
+
+      // Double Jump particles
+      if (particleSystem) {
+        particleSystem.createJumpEffect(playerPos.x, playerPos.y + playerSize.y / 2);
+      }
     }
-    
+
     // Handle dashing
     if (inputState.dash && player.isDashing()) {
       playerVel.x = player.getFacingDirection() * player.getDashForce();
@@ -68,18 +83,18 @@ export class Physics {
     // Update position based on velocity
     playerPos.x += playerVel.x * deltaTime;
     playerPos.y += playerVel.y * deltaTime;
-    
+
     // Check ground collision
     let isGrounded = false;
     let isWallSliding = false;
 
-          // Define playerBounds before use
-          const playerBounds = {
-            x: playerPos.x - playerSize.x / 2,
-            y: playerPos.y - playerSize.y / 2,
-            width: playerSize.x,
-            height: playerSize.y,
-          };    
+    // Define playerBounds before use
+    const playerBounds = {
+      x: playerPos.x - playerSize.x / 2,
+      y: playerPos.y - playerSize.y / 2,
+      width: playerSize.x,
+      height: playerSize.y,
+    };
     platforms.forEach(platform => {
 
       if (this.checkCollision(playerBounds, platform)) {
@@ -94,6 +109,12 @@ export class Physics {
           // Landing on top of the platform
           playerPos.y = platform.y - playerSize.y / 2;
           playerVel.y = 0;
+
+          // Landing effect
+          if (!player.isGrounded() && !isGrounded && particleSystem) {
+            particleSystem.createLandEffect(playerPos.x, platform.y);
+          }
+
           isGrounded = true;
         } else if (minOverlap === overlapBottom && playerVel.y < 0) {
           // Hitting the platform from below
@@ -122,15 +143,15 @@ export class Physics {
         }
       }
     });
-    
+
     player.setGrounded(isGrounded);
     player.setWallSliding(isWallSliding);
-    
+
     // Note: Removed friction application since we now handle stopping via input
-    
+
     // World boundaries
     const worldBounds = level.getWorldBounds();
-    
+
     // Horizontal boundaries
     if (playerPos.x - playerSize.x / 2 < worldBounds.left) {
       playerPos.x = worldBounds.left + playerSize.x / 2;
@@ -139,7 +160,7 @@ export class Physics {
       playerPos.x = worldBounds.right - playerSize.x / 2;
       playerVel.x = Math.min(0, playerVel.x);
     }
-    
+
     // Vertical boundaries
     if (playerPos.y + playerSize.y / 2 > worldBounds.bottom) {
       playerPos.y = worldBounds.bottom - playerSize.y / 2;
@@ -166,7 +187,7 @@ export class Physics {
     const worldBounds = level.getWorldBounds();
 
     let isGrounded = false;
-    
+
     if (enemy.getType() !== 'flyer') {
       platforms.forEach(platform => {
         if (this.checkCollision(enemyBounds, platform)) {
@@ -200,16 +221,16 @@ export class Physics {
         }
       });
     }
-    
+
     enemy.setGrounded(isGrounded);
-    
+
     // Apply friction when grounded
     if (isGrounded && enemy.getType() !== 'flyer') {
       enemyVel.x *= this.friction;
     }
-    
+
     // World boundaries
-    
+
     // Horizontal boundaries - reverse direction for enemies
     if (enemyPos.x - enemySize.x / 2 < worldBounds.left) {
       enemyPos.x = worldBounds.left + enemySize.x / 2;
@@ -218,14 +239,14 @@ export class Physics {
       enemyPos.x = worldBounds.right - enemySize.x / 2;
       enemyVel.x = -Math.abs(enemyVel.x); // Move left
     }
-    
+
     // Vertical boundaries
     if (enemyPos.y + enemySize.y / 2 > worldBounds.bottom) {
       enemyPos.y = worldBounds.bottom - enemySize.y / 2;
       enemyVel.y = 0;
       enemy.setGrounded(true);
     }
-    
+
     // Remove enemy if it falls too far below the world
     if (enemyPos.y > worldBounds.bottom + 200) {
       enemy.takeDamage(1000, { x: 0, y: 0 });

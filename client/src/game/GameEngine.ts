@@ -25,12 +25,12 @@ export class GameEngine {
   private soundManager!: SoundManager;
   private combat: Combat;
   private physics: Physics;
-  
+
   private lastTime = 0;
   private gameLoop: number = 0;
   private isRunning = false;
   private isPaused = false;
-  
+
   // Game state
   private score: number = 0;
   private timeElapsed: number = 0;
@@ -44,19 +44,19 @@ export class GameEngine {
     this.animationSystem = new AnimationSystem();
     this.combat = new Combat();
     this.physics = new Physics();
-    
+
     // Initialize player at the beginning of the level on the main ground platform
     // We initialize the level first to get the world bounds
     this.level = new Level(1024, 768); // Use a temporary size to get bounds, will be re-initialized
- if (this.level) {
- this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
+    if (this.level) {
+      this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
     } else {
- this.player = new Player({ x: 0, y: 0 }); // Fallback position
+      this.player = new Player({ x: 0, y: 0 }); // Fallback position
     }
-    
+
     // Initialize some enemies
     this.initializeEnemies();
-    
+
     // Initialize collectibles
     this.initializeCollectibles();
   }
@@ -74,9 +74,9 @@ export class GameEngine {
     this.level = new Level(canvas.width, canvas.height);
     // Initialize camera with the vertical boundary
     this.camera = new Camera(this.level.getWorldBounds().bottom - 250);
-    
+
     this.soundManager.initialize();
-    
+
     this.start();
   }
 
@@ -94,7 +94,7 @@ export class GameEngine {
       new Enemy({ x: 2500, y: 350 }, 'crawler'),
     ];
   }
-  
+
   private initializeCollectibles() {
     // Spread collectibles throughout the level
     this.collectibles = [
@@ -113,7 +113,7 @@ export class GameEngine {
 
   start() {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     this.lastTime = performance.now();
     this.gameLoop = requestAnimationFrame(this.update.bind(this));
@@ -131,8 +131,8 @@ export class GameEngine {
   }
 
   destroy() {
-    this.stop();    if (this.inputManager)
-    this.inputManager.destroy();
+    this.stop(); if (this.inputManager)
+      this.inputManager.destroy();
     this.soundManager.destroy();
   }
 
@@ -141,7 +141,7 @@ export class GameEngine {
   }
 
   handleVirtualInput(action: string, pressed: boolean) {
-    if (this.inputManager) { 
+    if (this.inputManager) {
       this.inputManager.setVirtualInput(action, pressed);
     }
   }
@@ -149,7 +149,7 @@ export class GameEngine {
   private update(currentTime: number) {
     if (!this.isRunning) return;
 
-    const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 1/30); // Cap at 30fps minimum
+    const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 1 / 30); // Cap at 30fps minimum
     this.lastTime = currentTime;
 
     if (!this.isPaused) {
@@ -163,24 +163,24 @@ export class GameEngine {
   private updateGame(deltaTime: number) {
     // Update game time
     this.timeElapsed += deltaTime;
-    
+
     // Update player
-    this.player.update(deltaTime, this.inputManager!); // Use definite assignment assertion here
+    this.player.update(deltaTime, this.inputManager!, this.particleSystem); // Use definite assignment assertion here
     if (!this.level) return; // Ensure level is initialized
 
     // Update enemies
     this.enemies.forEach(enemy => {
       // Add check for level before accessing its properties
       if (!this.level) {
-        return; 
+        return;
       }
       enemy.update(deltaTime, this.player.getPosition(), this.level.getPlatforms());
     });
-    
+
     // Update collectibles
     this.collectibles.forEach(collectible => {
       collectible.update(deltaTime);
-      
+
       // Check collision with player
       if (collectible.checkCollision(this.player.getBounds())) {
         const collected = collectible.collect();
@@ -189,13 +189,13 @@ export class GameEngine {
         }
       }
     });
-    
+
     // Update physics
- this.physics.update(deltaTime, this.player, this.enemies, this.level!);
+    this.physics.update(deltaTime, this.player, this.enemies, this.level!, this.particleSystem);
 
     // Update combat
     if (this.soundManager) {
- this.combat.update(deltaTime, this.player, this.enemies, this.particleSystem, this.soundManager!); // Use non-null assertion
+      this.combat.update(deltaTime, this.player, this.enemies, this.particleSystem, this.soundManager!); // Use non-null assertion
     }
 
     // Update particles
@@ -218,7 +218,7 @@ export class GameEngine {
     // Clear input at the end so justPressed states remain valid
     this.inputManager!.update(); // Use definite assignment assertion
   }
-  
+
   private handleCollectiblePickup(type: string, value: number) {
     switch (type) {
       case 'health':
@@ -276,7 +276,7 @@ export class GameEngine {
     this.collectibles.forEach(collectible => {
       collectible.render(ctx);
     });
-    
+
     // Render enemies
     this.enemies.forEach(enemy => {
       enemy.render(ctx);
@@ -303,7 +303,7 @@ export class GameEngine {
     if (this.inputManager?.isKeyPressed('KeyI')) { // Use optional chaining
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(10, 10, 250, 180);
-      
+
       ctx.fillStyle = 'white';
       ctx.font = '12px monospace';
       ctx.fillText(`Player: ${Math.round(this.player.getPosition().x)}, ${Math.round(this.player.getPosition().y)}`, 15, 30);
@@ -324,7 +324,7 @@ export class GameEngine {
     if (!this.soundManager) return; // Add check and return early
     this.soundManager.playSound('death');
     this.camera.shake(20, 1000);
-    
+
     // Trigger explosion particles
     this.particleSystem.createExplosion(
       this.player.getPosition().x,
@@ -392,30 +392,30 @@ export class GameEngine {
   restartGame() {
     // Reset player
     // Reset player to the beginning of the level on the main ground platform
- if (this.level) {
- this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
+    if (this.level) {
+      this.player = new Player({ x: this.level.getWorldBounds().left, y: this.level.getWorldBounds().bottom });
     } else {
- this.player = new Player({ x: 0, y: 0 }); // Fallback position
+      this.player = new Player({ x: 0, y: 0 }); // Fallback position
     }
 
     // Reset enemies
     this.initializeEnemies();
-    
+
     // Reset collectibles
     this.initializeCollectibles();
-    
+
     // Reset game state
     this.score = 0;
     this.timeElapsed = 0;
 
     // Reset camera
     // Ensure camera is re-initialized after player reset
- this.camera = new Camera(this.level ? this.level.getWorldBounds().bottom - 250 : 0); // Use a fallback vertical position if level is undefined
+    this.camera = new Camera(this.level ? this.level.getWorldBounds().bottom - 250 : 0); // Use a fallback vertical position if level is undefined
 
     // Clear particles
     this.particleSystem.clear();
 
     // Reset combat
     this.combat.reset();
- }
+  }
 }
